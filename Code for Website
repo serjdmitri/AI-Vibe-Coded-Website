@@ -1,0 +1,4494 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>F1 Stats Hub</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #ffffff;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    .app-container {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(90deg, #1a1a1a 0%, #2d0a0a 100%);
+      border-bottom: 3px solid #dc0000;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(220, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #dc0000;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: #888;
+      font-style: italic;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .balance {
+      background: rgba(220, 0, 0, 0.2);
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border: 2px solid #dc0000;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .balance:hover {
+      background: rgba(220, 0, 0, 0.3);
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(220, 0, 0, 0.3);
+    }
+
+    .balance:hover::after {
+      content: '+ Add Funds';
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #dc0000;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .user-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dc0000, #ff4444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border: 2px solid #fff;
+      transition: transform 0.2s;
+      object-fit: cover;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.1);
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 0;
+      background: #1a1a1a;
+      border: 2px solid #dc0000;
+      border-radius: 12px;
+      padding: 1rem;
+      min-width: 250px;
+      z-index: 1000;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+    }
+
+    .profile-dropdown.active {
+      display: block;
+    }
+
+    .profile-dropdown-item {
+      padding: 0.8rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .profile-dropdown-item:hover {
+      background: rgba(220, 0, 0, 0.2);
+    }
+
+    /* Navigation */
+    .nav-bar {
+      background: #1a1a1a;
+      padding: 0 2rem;
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid #333;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      position: relative;
+      justify-content: center;
+    }
+
+    .nav-item {
+      position: relative;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: #888;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 1rem 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 3px solid transparent;
+    }
+
+    .nav-btn:hover {
+      color: #dc0000;
+      background: rgba(220, 0, 0, 0.1);
+    }
+
+    .nav-btn.active {
+      color: #dc0000;
+      border-bottom-color: #dc0000;
+      background: rgba(220, 0, 0, 0.05);
+    }
+
+    .nav-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #1a1a1a;
+      border: 2px solid #dc0000;
+      border-radius: 0 0 8px 8px;
+      min-width: 220px;
+      z-index: 100;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+    }
+
+    .nav-item:hover .nav-dropdown {
+      display: block;
+    }
+
+    .nav-dropdown-item {
+      padding: 0.8rem 1.2rem;
+      cursor: pointer;
+      transition: background 0.3s;
+      color: #ddd;
+      border-bottom: 1px solid #333;
+    }
+
+    .nav-dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .nav-dropdown-item:hover {
+      background: rgba(220, 0, 0, 0.2);
+      color: #fff;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.4s ease-in;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(30, 30, 30, 0.8);
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-header {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #dc0000;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border-bottom: 2px solid #dc0000;
+      padding-bottom: 0.5rem;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Standings Table */
+    .standings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .standings-table th {
+      background: #dc0000;
+      color: #fff;
+      padding: 0.8rem;
+      text-align: left;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    .standings-table td {
+      padding: 0.8rem;
+      border-bottom: 1px solid #333;
+      font-size: 0.95rem;
+    }
+
+    .standings-table tr:hover {
+      background: rgba(220, 0, 0, 0.1);
+    }
+
+    .position-badge {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      background: #dc0000;
+      color: #fff;
+      text-align: center;
+      line-height: 30px;
+      border-radius: 50%;
+      font-weight: 700;
+    }
+
+    .driver-name {
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .team-name {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .points {
+      font-weight: 700;
+      color: #dc0000;
+      font-size: 1.1rem;
+    }
+
+    /* Betting Cards */
+    .bet-card {
+      background: linear-gradient(135deg, #1a1a1a, #2a0a0a);
+      border: 2px solid #dc0000;
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .bet-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(220, 0, 0, 0.4);
+    }
+
+    .race-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .race-date {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .bet-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .bet-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    .bet-option:hover {
+      background: rgba(220, 0, 0, 0.2);
+    }
+
+    .driver-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .odds {
+      font-weight: 700;
+      color: #4caf50;
+      font-size: 1.1rem;
+    }
+
+    .bet-btn {
+      background: #dc0000;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .bet-btn:hover {
+      background: #ff0000;
+      transform: scale(1.05);
+    }
+
+    .bet-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .simulate-btn {
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 1rem;
+      width: 100%;
+    }
+
+    .simulate-btn:hover {
+      background: #45a049;
+    }
+
+    .simulate-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
+    /* Chat System */
+    .chat-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 1.5rem;
+      height: 600px;
+    }
+
+    .channels-sidebar {
+      background: rgba(20, 20, 20, 0.9);
+      border-radius: 12px;
+      padding: 1rem;
+      overflow-y: auto;
+      border: 1px solid #333;
+    }
+
+    .channel-item {
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .channel-item:hover {
+      background: rgba(220, 0, 0, 0.2);
+    }
+
+    .channel-item.active {
+      background: #dc0000;
+    }
+
+    .chat-main {
+      display: flex;
+      flex-direction: column;
+      background: rgba(20, 20, 20, 0.9);
+      border-radius: 12px;
+      border: 1px solid #333;
+    }
+
+    .chat-header {
+      padding: 1rem;
+      border-bottom: 2px solid #dc0000;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      max-height: 400px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin-bottom: 1rem;
+      padding: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      border-left: 3px solid #dc0000;
+    }
+
+    .message-author {
+      font-weight: 700;
+      color: #dc0000;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .message-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dc0000, #ff4444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      border: 2px solid #fff;
+    }
+
+    .message-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .message-time {
+      font-size: 0.75rem;
+      color: #888;
+      margin-left: 0.5rem;
+    }
+
+    .message-text {
+      color: #ddd;
+      line-height: 1.5;
+    }
+
+    .chat-input-container {
+      padding: 1rem;
+      border-top: 1px solid #333;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 0.8rem;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .send-btn {
+      background: #dc0000;
+      color: #fff;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .send-btn:hover {
+      background: #ff0000;
+    }
+
+    .send-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
+    /* Profile Page */
+    .profile-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: linear-gradient(135deg, #1a1a1a, #2d0a0a);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      border: 2px solid #dc0000;
+    }
+
+    .profile-avatar-large {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dc0000, #ff4444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 700;
+      border: 4px solid #fff;
+      object-fit: cover;
+      position: relative;
+    }
+
+    .profile-avatar-large img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .profile-info {
+      flex: 1;
+    }
+
+    .profile-username {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-bio {
+      color: #888;
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    .profile-stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #dc0000;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    /* Buttons */
+    .primary-btn {
+      background: #dc0000;
+      color: #fff;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.95rem;
+    }
+
+    .primary-btn:hover {
+      background: #ff0000;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(220, 0, 0, 0.4);
+    }
+
+    .secondary-btn {
+      background: transparent;
+      color: #dc0000;
+      border: 2px solid #dc0000;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .secondary-btn:hover {
+      background: #dc0000;
+      color: #fff;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #ddd;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 0.8rem;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #dc0000;
+      box-shadow: 0 0 0 3px rgba(220, 0, 0, 0.2);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #1a1a1a;
+      border: 2px solid #dc0000;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80%;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: #dc0000;
+      text-transform: uppercase;
+    }
+
+    .modal-close {
+      background: #555;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    /* AI Assistant Panel */
+    .ai-panel {
+      background: linear-gradient(135deg, #1a1a1a, #0a0a2a);
+      border: 2px solid #4a90e2;
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .ai-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+      color: #4a90e2;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .ai-suggestion {
+      background: rgba(74, 144, 226, 0.1);
+      border-left: 3px solid #4a90e2;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .ai-chat-input {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .ai-response {
+      background: rgba(74, 144, 226, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      color: #ddd;
+      line-height: 1.6;
+    }
+
+    /* News Items */
+    .news-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      border-left: 3px solid #dc0000;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .news-item:hover {
+      background: rgba(220, 0, 0, 0.1);
+      transform: translateX(5px);
+    }
+
+    .news-item.official {
+      border-left-color: #ffd700;
+      background: rgba(255, 215, 0, 0.05);
+    }
+
+    .news-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .news-date {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .news-badge {
+      display: inline-block;
+      background: #ffd700;
+      color: #000;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 0.5rem;
+    }
+
+    /* Top Bettors */
+    .bettor-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      margin-bottom: 0.8rem;
+      border-left: 4px solid #dc0000;
+    }
+
+    .bettor-rank {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #dc0000;
+      width: 40px;
+    }
+
+    .bettor-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dc0000, #ff4444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      border: 2px solid #fff;
+      object-fit: cover;
+    }
+
+    .bettor-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .bettor-info {
+      flex: 1;
+    }
+
+    .bettor-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .bettor-profit {
+      color: #4caf50;
+      font-weight: 600;
+    }
+
+    .bettor-profit.negative {
+      color: #f44336;
+    }
+
+    /* Loading State */
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+      font-style: italic;
+    }
+
+    /* Welcome Screen */
+    .welcome-screen {
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .welcome-screen h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #dc0000;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .welcome-screen p {
+      font-size: 1.2rem;
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      background: rgba(220, 0, 0, 0.1);
+      border: 1px solid #dc0000;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .info-banner {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid #4caf50;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      color: #4caf50;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .nav-bar {
+        flex-direction: column;
+        gap: 0;
+        padding: 0;
+      }
+
+      .nav-item {
+        width: 100%;
+      }
+
+      .nav-btn {
+        width: 100%;
+        text-align: left;
+      }
+
+      .chat-container {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .channels-sidebar {
+        max-height: 200px;
+      }
+
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .profile-stats {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #dc0000;
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ff0000;
+    }
+
+    /* Toast Messages */
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .file-input-label {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      background: #dc0000;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: background 0.3s;
+    }
+
+    .file-input-label:hover {
+      background: #ff0000;
+    }
+
+    .preview-image {
+      margin-top: 1rem;
+      max-width: 150px;
+      max-height: 150px;
+      border-radius: 50%;
+      border: 3px solid #dc0000;
+      object-fit: cover;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="app-container"><!-- Header -->
+   <header class="header">
+    <div class="logo-section">
+     <div class="logo" id="platformTitle">
+      F1+
+     </div>
+     <div class="tagline" id="tagline">
+      Advanced F1 Analytics, Predictions &amp; Community
+     </div>
+    </div>
+    <div class="user-info" id="userInfoSection" style="display: none;">
+     <div class="balance" id="userBalance" onclick="openModal('addFundsModal')">
+      $1,000
+     </div>
+     <div class="user-avatar" id="userAvatar" onclick="toggleProfileDropdown()">
+      U
+     </div>
+     <div class="profile-dropdown" id="profileDropdown">
+      <div class="profile-dropdown-item" onclick="navigateTo('profileView'); toggleProfileDropdown();">
+       👤 View Profile
+      </div>
+      <div class="profile-dropdown-item" onclick="openModal('editProfileModal'); toggleProfileDropdown();">
+       ����� Edit Profile
+      </div>
+     </div>
+    </div>
+   </header><!-- Navigation -->
+   <nav class="nav-bar" id="mainNavBar" style="display: none;">
+    <div class="nav-item"><button class="nav-btn active" onclick="navigateTo('home')">Home</button>
+     <div class="nav-dropdown">
+      <div class="nav-dropdown-item" onclick="navigateTo('home')">
+       Dashboard
+      </div>
+      <div class="nav-dropdown-item" onclick="navigateTo('currentStandings')">
+       Driver Standings
+      </div>
+      <div class="nav-dropdown-item" onclick="navigateTo('constructorStandings')">
+       Constructor Standings
+      </div>
+     </div>
+    </div>
+    <div class="nav-item"><button class="nav-btn" onclick="navigateTo('currentStandings')">Standings</button>
+     <div class="nav-dropdown">
+      <div class="nav-dropdown-item" onclick="navigateTo('currentStandings')">
+       Current Standings (2025)
+      </div>
+      <div class="nav-dropdown-item" onclick="navigateTo('history')">
+       Historical Standings
+      </div>
+     </div>
+    </div><button class="nav-btn" onclick="navigateTo('betting')">Predictions &amp; Betting</button> <button class="nav-btn" onclick="navigateTo('news')">News &amp; Updates</button> <button class="nav-btn" onclick="navigateTo('ai')">AI</button> <button class="nav-btn" onclick="navigateTo('community')">Community</button>
+   </nav><!-- Main Content -->
+   <main class="main-content"><!-- Login/Welcome Page -->
+    <div id="loginPage" class="page active">
+     <div class="welcome-screen">
+      <h1>🏎️ F1+</h1>
+      <p>Advanced F1 Analytics, Predictions &amp; Community</p>
+      <div class="card" style="max-width: 500px; margin: 2rem auto; text-align: left;">
+       <div class="card-header" style="text-align: center;">
+        Create Your Account
+       </div>
+       <p style="color: #888; text-align: center; margin-bottom: 1.5rem;">Get access to live standings, betting simulator, AI predictions, and community chat</p>
+       <form id="signupForm" onsubmit="signup(event)">
+        <div class="form-group"><label class="form-label" for="signupUsername">Username</label> <input type="text" id="signupUsername" class="form-input" required minlength="3">
+        </div>
+        <div class="form-group"><label class="form-label" for="signupBio">Bio (Optional)</label> <textarea id="signupBio" class="form-textarea" placeholder="Tell us about yourself..."></textarea>
+        </div>
+        <div class="form-group"><label class="form-label">Profile Photo (Optional)</label>
+         <div class="file-input-wrapper"><input type="file" id="signupPhotoInput" accept="image/*" onchange="previewProfilePhoto(event, 'signupPhotoPreview')"> <label for="signupPhotoInput" class="file-input-label">Choose Photo</label>
+         </div>
+         <div id="signupPhotoPreview"></div>
+        </div>
+        <div class="form-group"><label class="form-label" for="signupTeam">Favorite Team</label> <select id="signupTeam" class="form-select" required> <option value="">Select a team</option> <option value="McLaren">McLaren</option> <option value="Red Bull Racing">Red Bull Racing</option> <option value="Mercedes">Mercedes</option> <option value="Ferrari">Ferrari</option> <option value="Williams">Williams</option> <option value="Racing Bulls">Racing Bulls</option> <option value="Aston Martin">Aston Martin</option> <option value="Haas">Haas</option> <option value="Kick Sauber">Kick Sauber</option> <option value="Alpine">Alpine</option> </select>
+        </div>
+        <div class="form-group"><label class="form-label" for="signupDriver">Favorite Driver</label> <select id="signupDriver" class="form-select" required> <option value="">Select a driver</option> <option value="Lando Norris">Lando Norris</option> <option value="Max Verstappen">Max Verstappen</option> <option value="Oscar Piastri">Oscar Piastri</option> <option value="George Russell">George Russell</option> <option value="Charles Leclerc">Charles Leclerc</option> <option value="Lewis Hamilton">Lewis Hamilton</option> <option value="Andrea Kimi Antonelli">Andrea Kimi Antonelli</option> <option value="Alex Albon">Alex Albon</option> <option value="Carlos Sainz">Carlos Sainz</option> <option value="Fernando Alonso">Fernando Alonso</option> </select>
+        </div><button type="submit" class="primary-btn" style="width: 100%; margin-top: 1rem;"> 🏁 Create Account &amp; Enter </button>
+       </form>
+      </div>
+      <div style="max-width: 500px; margin: 2rem auto;">
+       <div style="background: rgba(220, 0, 0, 0.1); border: 1px solid #dc0000; border-radius: 8px; padding: 1rem;"><strong style="color: #dc0000;">✨ What's Inside:</strong><br>
+        <ul style="margin-top: 0.5rem; color: #888; line-height: 1.8;">
+         <li>���� Live 2025 F1 Standings &amp; Stats</li>
+         <li>��� Virtual Betting Simulator ($1,000 starting balance)</li>
+         <li>🤖 AI-Powered Race Predictions</li>
+         <li>💬 Community Chat &amp; Discussions</li>
+         <li>🏆 Leaderboards &amp; Achievements</li>
+         <li>📰 Latest F1 News &amp; Updates</li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div><!-- Home Page -->
+    <div id="homePage" class="page">
+     <div class="grid-2">
+      <div class="card">
+       <div class="card-header">
+        🏆 Top 5 Drivers (2025)
+       </div>
+       <table class="standings-table">
+        <thead>
+         <tr>
+          <th>Pos</th>
+          <th>Driver</th>
+          <th>Team</th>
+          <th>Points</th>
+         </tr>
+        </thead>
+        <tbody id="homeDriversBody"></tbody>
+       </table>
+      </div>
+      <div class="card">
+       <div class="card-header">
+        🏁 Top 5 Teams (2025)
+       </div>
+       <table class="standings-table">
+        <thead>
+         <tr>
+          <th>Pos</th>
+          <th>Team</th>
+          <th>Points</th>
+         </tr>
+        </thead>
+        <tbody id="homeTeamsBody"></tbody>
+       </table>
+      </div>
+     </div>
+     <div class="card">
+      <div class="card-header">
+       🏁 Next Race - Place Your Bets
+      </div>
+      <div id="nextRacePreview"></div>
+     </div>
+     <div class="card">
+      <div class="card-header">
+       💰 Top Predictors
+      </div>
+      <div id="homeTopBettorsContainer">
+       <div class="loading">
+        No predictors yet
+       </div>
+      </div>
+     </div>
+     <div class="disclaimer" id="disclaimerText">
+      ℹ️ All statistics are based on real F1 data. Betting features use virtual currency only - Educational purposes
+     </div>
+    </div><!-- Current Standings Page -->
+    <div id="currentStandingsPage" class="page">
+     <div class="card">
+      <div class="card-header">
+       🏁 2025 Driver Championship
+      </div>
+      <table class="standings-table">
+       <thead>
+        <tr>
+         <th>Pos</th>
+         <th>Driver</th>
+         <th>Team</th>
+         <th>Points</th>
+        </tr>
+       </thead>
+       <tbody id="driverStandingsBody"></tbody>
+      </table>
+     </div>
+    </div><!-- Constructor Standings Page -->
+    <div id="constructorStandingsPage" class="page">
+     <div class="card">
+      <div class="card-header">
+       🏆 2025 Constructor Championship
+      </div>
+      <table class="standings-table">
+       <thead>
+        <tr>
+         <th>Pos</th>
+         <th>Team</th>
+         <th>Points</th>
+        </tr>
+       </thead>
+       <tbody id="constructorStandingsBody"></tbody>
+      </table>
+     </div>
+    </div><!-- History Page -->
+    <div id="historyPage" class="page">
+     <div class="card">
+      <div class="card-header">
+       📅 2024 F1 World Championship Results
+      </div>
+      <div class="grid-2" style="margin-bottom: 1.5rem;">
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px;">
+        <div style="font-size: 0.9rem; color: #888;">
+         World Champion
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #dc0000;">
+         Max Verstappen
+        </div>
+        <div style="color: #888;">
+         Red Bull Racing • 437 points
+        </div>
+       </div>
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px;">
+        <div style="font-size: 0.9rem; color: #888;">
+         Constructor Champion
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #dc0000;">
+         McLaren
+        </div>
+        <div style="color: #888;">
+         666 points
+        </div>
+       </div>
+      </div>
+      <table class="standings-table">
+       <thead>
+        <tr>
+         <th>Pos</th>
+         <th>Driver</th>
+         <th>Team</th>
+         <th>Points</th>
+        </tr>
+       </thead>
+       <tbody>
+        <tr>
+         <td><span class="position-badge">1</span></td>
+         <td><span class="driver-name">Max Verstappen</span></td>
+         <td><span class="team-name">Red Bull Racing</span></td>
+         <td><span class="points">437</span></td>
+        </tr>
+        <tr>
+         <td><span class="position-badge">2</span></td>
+         <td><span class="driver-name">Lando Norris</span></td>
+         <td><span class="team-name">McLaren</span></td>
+         <td><span class="points">374</span></td>
+        </tr>
+        <tr>
+         <td><span class="position-badge">3</span></td>
+         <td><span class="driver-name">Charles Leclerc</span></td>
+         <td><span class="team-name">Ferrari</span></td>
+         <td><span class="points">356</span></td>
+        </tr>
+        <tr>
+         <td>4</td>
+         <td><span class="driver-name">Oscar Piastri</span></td>
+         <td><span class="team-name">McLaren</span></td>
+         <td>292</td>
+        </tr>
+        <tr>
+         <td>5</td>
+         <td><span class="driver-name">Carlos Sainz</span></td>
+         <td><span class="team-name">Ferrari</span></td>
+         <td>290</td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+     <div class="card">
+      <div class="card-header">
+       📅 2023 F1 World Championship Results
+      </div>
+      <div class="grid-2" style="margin-bottom: 1.5rem;">
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px;">
+        <div style="font-size: 0.9rem; color: #888;">
+         World Champion
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #dc0000;">
+         Max Verstappen
+        </div>
+        <div style="color: #888;">
+         Red Bull Racing • 575 points
+        </div>
+       </div>
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px;">
+        <div style="font-size: 0.9rem; color: #888;">
+         Constructor Champion
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #dc0000;">
+         Red Bull Racing
+        </div>
+        <div style="color: #888;">
+         860 points
+        </div>
+       </div>
+      </div>
+      <table class="standings-table">
+       <thead>
+        <tr>
+         <th>Pos</th>
+         <th>Driver</th>
+         <th>Team</th>
+         <th>Points</th>
+        </tr>
+       </thead>
+       <tbody>
+        <tr>
+         <td><span class="position-badge">1</span></td>
+         <td><span class="driver-name">Max Verstappen</span></td>
+         <td><span class="team-name">Red Bull Racing</span></td>
+         <td><span class="points">575</span></td>
+        </tr>
+        <tr>
+         <td><span class="position-badge">2</span></td>
+         <td><span class="driver-name">Sergio Perez</span></td>
+         <td><span class="team-name">Red Bull Racing</span></td>
+         <td><span class="points">285</span></td>
+        </tr>
+        <tr>
+         <td><span class="position-badge">3</span></td>
+         <td><span class="driver-name">Lewis Hamilton</span></td>
+         <td><span class="team-name">Mercedes</span></td>
+         <td><span class="points">234</span></td>
+        </tr>
+        <tr>
+         <td>4</td>
+         <td><span class="driver-name">Fernando Alonso</span></td>
+         <td><span class="team-name">Aston Martin</span></td>
+         <td>206</td>
+        </tr>
+        <tr>
+         <td>5</td>
+         <td><span class="driver-name">Charles Leclerc</span></td>
+         <td><span class="team-name">Ferrari</span></td>
+         <td>206</td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+     <div class="card">
+      <div class="card-header">
+       📅 2022 F1 World Championship Results
+      </div>
+      <div class="grid-2" style="margin-bottom: 1.5rem;">
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px;">
+        <div style="font-size: 0.9rem; color: #888;">
+         World Champion
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #dc0000;">
+         Max Verstappen
+        </div>
+        <div style="color: #888;">
+         Red Bull Racing • 454 points
+        </div>
+       </div>
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px;">
+        <div style="font-size: 0.9rem; color: #888;">
+         Constructor Champion
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #dc0000;">
+         Red Bull Racing
+        </div>
+        <div style="color: #888;">
+         759 points
+        </div>
+       </div>
+      </div>
+      <table class="standings-table">
+       <thead>
+        <tr>
+         <th>Pos</th>
+         <th>Driver</th>
+         <th>Team</th>
+         <th>Points</th>
+        </tr>
+       </thead>
+       <tbody>
+        <tr>
+         <td><span class="position-badge">1</span></td>
+         <td><span class="driver-name">Max Verstappen</span></td>
+         <td><span class="team-name">Red Bull Racing</span></td>
+         <td><span class="points">454</span></td>
+        </tr>
+        <tr>
+         <td><span class="position-badge">2</span></td>
+         <td><span class="driver-name">Charles Leclerc</span></td>
+         <td><span class="team-name">Ferrari</span></td>
+         <td><span class="points">308</span></td>
+        </tr>
+        <tr>
+         <td><span class="position-badge">3</span></td>
+         <td><span class="driver-name">Sergio Perez</span></td>
+         <td><span class="team-name">Red Bull Racing</span></td>
+         <td><span class="points">305</span></td>
+        </tr>
+        <tr>
+         <td>4</td>
+         <td><span class="driver-name">George Russell</span></td>
+         <td><span class="team-name">Mercedes</span></td>
+         <td>275</td>
+        </tr>
+        <tr>
+         <td>5</td>
+         <td><span class="driver-name">Carlos Sainz</span></td>
+         <td><span class="team-name">Ferrari</span></td>
+         <td>246</td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+    </div><!-- Betting Page -->
+    <div id="bettingPage" class="page">
+     <div id="noBettingProfile" class="card" style="text-align: center; padding: 3rem;">
+      <h2 style="color: #dc0000; margin-bottom: 1rem;">🎯 Virtual Betting Simulator</h2>
+      <p style="color: #888; font-size: 1.1rem; margin-bottom: 2rem;">Create a profile to start predicting race outcomes with virtual currency!<br>
+        Test your F1 knowledge and compete with other fans.</p><button class="primary-btn" onclick="openModal('createProfileModal')">Create Profile to Start</button>
+     </div>
+     <div id="bettingContent" style="display: none;">
+      <div class="info-banner">
+       �� Betting is based on simulated race outcomes using driver skill ratings and team performance. Create bets and simulate races to see results!
+      </div>
+      <div class="card" style="padding: 1rem;">
+       <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+         <div style="font-size: 0.9rem; color: #888;">
+          Your Balance
+         </div>
+         <div style="font-size: 1.5rem; font-weight: 700; color: #dc0000;" id="bettingBalance">
+          $1,000
+         </div>
+        </div>
+        <div style="text-align: right;">
+         <p style="color: #888; font-size: 0.85rem; margin: 0;" id="startingBalanceLabel">Starting Balance: $1,000</p>
+        </div>
+       </div>
+      </div>
+      <div class="card">
+       <div class="card-header">
+        🏁 Upcoming Races - Place Your Bets
+       </div>
+       <div id="upcomingRacesContainer" class="grid-2"></div>
+      </div>
+      <div class="card">
+       <div class="card-header">
+        📊 Your Active Bets
+       </div>
+       <div id="activeBetsContainer">
+        <div class="loading">
+         No active bets
+        </div>
+       </div><button class="simulate-btn" id="simulateAllBtn" onclick="simulateAllRaces()" disabled> 🎲 Simulate All Races &amp; Get Results </button>
+      </div>
+      <div class="card">
+       <div class="card-header">
+        ��� Top Predictors
+       </div>
+       <div id="topBettorsContainer">
+        <div class="loading">
+         No predictors yet
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- News & Updates Page -->
+    <div id="newsPage" class="page">
+     <div class="card">
+      <div class="card-header">
+       📰 Latest F1 News &amp; Updates
+      </div>
+      <div id="newsArticlesContainer"></div>
+     </div>
+     <div class="grid-2">
+      <div class="card">
+       <div class="card-header">
+        🏆 Recent Race Winners (2025)
+       </div>
+       <div id="raceWinnersContainer"></div>
+      </div>
+      <div class="card">
+       <div class="card-header">
+        ⚖️ FIA Rules &amp; Rulings
+       </div>
+       <div id="fiaRulingsContainer"></div>
+      </div>
+     </div>
+     <div class="card">
+      <div class="card-header">
+       📖 FIA Official Rulebook
+      </div>
+      <p style="color: #888; margin-bottom: 1.5rem; line-height: 1.6;">Download the complete FIA Formula 1 Technical and Sporting Regulations. This comprehensive document contains all official rules, technical specifications, and sporting regulations that govern Formula 1.</p><button class="primary-btn" onclick="downloadFIARulebook()" style="width: 100%;"> 📥 Download FIA F1 Rulebook 2025 (PDF) </button>
+     </div>
+    </div><!-- AI Assistant Page -->
+    <div id="aiPage" class="page">
+     <div class="card">
+      <div class="card-header">
+       🤖 AI Assistant - Ask Anything About F1
+      </div>
+      <div class="ai-panel" style="border: none; padding: 0;">
+       <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(74, 144, 226, 0.1); border-radius: 8px; border-left: 3px solid #4a90e2;">
+        <p style="color: #ddd; margin: 0;">I'm your F1 AI assistant powered by advanced language models. Ask me anything about Formula 1 - from technical regulations and race strategy to driver statistics and historical data. I can help with predictions, explain complex racing concepts, analyze team performance, and much more!</p>
+       </div>
+       <div id="aiChatHistory" style="max-height: 500px; overflow-y: auto; margin-bottom: 1rem; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 8px;">
+        <div style="text-align: center; color: #888; padding: 2rem;">
+         👋 Hi! I'm your F1 AI assistant. Ask me anything about Formula 1!
+        </div>
+       </div>
+       <div class="ai-chat-input"><input type="text" class="chat-input" id="aiChatInput" placeholder="Ask me anything about F1..."> <button class="send-btn" onclick="sendAIMessage()" id="aiSendBtn">Send</button>
+       </div>
+       <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;"><button class="secondary-btn" onclick="quickAIQuestion('Who is leading the 2025 championship?')" style="padding: 0.5rem 1rem; font-size: 0.85rem;"> Championship Leader </button> <button class="secondary-btn" onclick="quickAIQuestion('Explain DRS in Formula 1')" style="padding: 0.5rem 1rem; font-size: 0.85rem;"> What is DRS? </button> <button class="secondary-btn" onclick="quickAIQuestion('Which team has the fastest car in 2025?')" style="padding: 0.5rem 1rem; font-size: 0.85rem;"> Fastest Car </button> <button class="secondary-btn" onclick="quickAIQuestion('Compare Verstappen and Norris driving styles')" style="padding: 0.5rem 1rem; font-size: 0.85rem;"> Driver Comparison </button>
+       </div>
+      </div>
+     </div>
+     <div class="card">
+      <div class="card-header">
+       💡 Quick Stats
+      </div>
+      <div class="grid-3">
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px; text-align: center;">
+        <div style="font-size: 0.85rem; color: #888;">
+         Championship Leader
+        </div>
+        <div style="font-size: 1.2rem; font-weight: 700; color: #dc0000; margin-top: 0.3rem;">
+         Lando Norris
+        </div>
+        <div style="font-size: 0.85rem; color: #888; margin-top: 0.2rem;">
+         423 points
+        </div>
+       </div>
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px; text-align: center;">
+        <div style="font-size: 0.85rem; color: #888;">
+         Constructor Leader
+        </div>
+        <div style="font-size: 1.2rem; font-weight: 700; color: #dc0000; margin-top: 0.3rem;">
+         McLaren
+        </div>
+        <div style="font-size: 0.85rem; color: #888; margin-top: 0.2rem;">
+         833 points
+        </div>
+       </div>
+       <div style="padding: 1rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px; text-align: center;">
+        <div style="font-size: 0.85rem; color: #888;">
+         Closest Battle
+        </div>
+        <div style="font-size: 1.2rem; font-weight: 700; color: #dc0000; margin-top: 0.3rem;">
+         2 Points
+        </div>
+        <div style="font-size: 0.85rem; color: #888; margin-top: 0.2rem;">
+         Norris vs Verstappen
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Community Page -->
+    <div id="communityPage" class="page">
+     <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+       <div class="card-header" style="margin: 0;">
+        💬 F1 Community
+       </div>
+       <div style="display: flex; gap: 0.5rem;"><button class="secondary-btn" id="toggleMessagesBtn" onclick="toggleFakeMessages()" style="padding: 0.6rem 1rem;"> <span id="toggleMessageText">🤖 Disable Auto Messages</span> </button> <button class="primary-btn" onclick="openCreateChannelModal()">+ New Channel</button>
+       </div>
+      </div>
+      <div class="chat-container">
+       <div class="channels-sidebar">
+        <h3 style="margin-bottom: 1rem; color: #dc0000;">Channels</h3>
+        <div id="channelsList"></div>
+       </div>
+       <div class="chat-main">
+        <div class="chat-header" id="currentChannelName">
+         Select a channel
+        </div>
+        <div class="chat-messages" id="chatMessages">
+         <div class="loading">
+          Select a channel to start chatting
+         </div>
+        </div>
+        <div class="chat-input-container"><input type="text" class="chat-input" id="messageInput" placeholder="Type a message..." disabled> <button class="send-btn" onclick="sendMessage()" disabled>Send</button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Profile View Page -->
+    <div id="profileViewPage" class="page">
+     <div id="noProfile" class="card" style="text-align: center; padding: 3rem;">
+      <h2 style="color: #dc0000; margin-bottom: 1rem;">👤 Create Your Profile</h2>
+      <p style="color: #888; font-size: 1.1rem; margin-bottom: 2rem;">Set up your profile to access betting features, track your predictions, and join the community!</p><button class="primary-btn" onclick="openModal('createProfileModal')">Create Profile</button>
+     </div>
+     <div id="profileContent"></div>
+    </div>
+   </main>
+  </div><!-- Modals -->
+  <div class="modal-overlay" id="createProfileModal">
+   <div class="modal">
+    <div class="modal-header">
+     Create Your Profile
+    </div>
+    <form id="createProfileForm" onsubmit="createProfile(event)">
+     <div class="form-group"><label class="form-label" for="username">Username</label> <input type="text" id="username" class="form-input" required>
+     </div>
+     <div class="form-group"><label class="form-label" for="userBio">Bio</label> <textarea id="userBio" class="form-textarea" placeholder="Tell us about yourself..."></textarea>
+     </div>
+     <div class="form-group"><label class="form-label">Profile Photo</label>
+      <div class="file-input-wrapper"><input type="file" id="profilePhotoInput" accept="image/*" onchange="previewProfilePhoto(event, 'profilePhotoPreview')"> <label for="profilePhotoInput" class="file-input-label">Choose Photo</label>
+      </div>
+      <div id="profilePhotoPreview"></div>
+     </div>
+     <div class="form-group"><label class="form-label" for="favoriteTeam">Favorite Team</label> <select id="favoriteTeam" class="form-select" required> <option value="">Select a team</option> <option value="McLaren">McLaren</option> <option value="Red Bull Racing">Red Bull Racing</option> <option value="Mercedes">Mercedes</option> <option value="Ferrari">Ferrari</option> <option value="Williams">Williams</option> <option value="Racing Bulls">Racing Bulls</option> <option value="Aston Martin">Aston Martin</option> <option value="Haas">Haas</option> <option value="Kick Sauber">Kick Sauber</option> <option value="Alpine">Alpine</option> </select>
+     </div>
+     <div class="form-group"><label class="form-label" for="favoriteDriver">Favorite Driver</label> <select id="favoriteDriver" class="form-select" required> <option value="">Select a driver</option> <option value="Lando Norris">Lando Norris</option> <option value="Max Verstappen">Max Verstappen</option> <option value="Oscar Piastri">Oscar Piastri</option> <option value="George Russell">George Russell</option> <option value="Charles Leclerc">Charles Leclerc</option> <option value="Lewis Hamilton">Lewis Hamilton</option> <option value="Andrea Kimi Antonelli">Andrea Kimi Antonelli</option> <option value="Alex Albon">Alex Albon</option> <option value="Carlos Sainz">Carlos Sainz</option> <option value="Fernando Alonso">Fernando Alonso</option> </select>
+     </div><button type="submit" class="primary-btn" style="width: 100%;">Create Profile</button> <button type="button" class="modal-close" onclick="closeModal('createProfileModal')" style="width: 100%;">Cancel</button>
+    </form>
+   </div>
+  </div>
+  <div class="modal-overlay" id="editProfileModal">
+   <div class="modal">
+    <div class="modal-header">
+     Edit Profile
+    </div>
+    <form id="editProfileForm" onsubmit="updateProfile(event)">
+     <div class="form-group"><label class="form-label" for="editUsername">Username</label> <input type="text" id="editUsername" class="form-input" required>
+     </div>
+     <div class="form-group"><label class="form-label" for="editUserBio">Bio</label> <textarea id="editUserBio" class="form-textarea" placeholder="Tell us about yourself..."></textarea>
+     </div>
+     <div class="form-group"><label class="form-label">Profile Photo</label>
+      <div class="file-input-wrapper"><input type="file" id="editProfilePhotoInput" accept="image/*" onchange="previewProfilePhoto(event, 'editProfilePhotoPreview')"> <label for="editProfilePhotoInput" class="file-input-label">Change Photo</label>
+      </div>
+      <div id="editProfilePhotoPreview"></div>
+     </div>
+     <div class="form-group"><label class="form-label" for="editFavoriteTeam">Favorite Team</label> <select id="editFavoriteTeam" class="form-select" required> <option value="">Select a team</option> <option value="McLaren">McLaren</option> <option value="Red Bull Racing">Red Bull Racing</option> <option value="Mercedes">Mercedes</option> <option value="Ferrari">Ferrari</option> <option value="Williams">Williams</option> <option value="Racing Bulls">Racing Bulls</option> <option value="Aston Martin">Aston Martin</option> <option value="Haas">Haas</option> <option value="Kick Sauber">Kick Sauber</option> <option value="Alpine">Alpine</option> </select>
+     </div>
+     <div class="form-group"><label class="form-label" for="editFavoriteDriver">Favorite Driver</label> <select id="editFavoriteDriver" class="form-select" required> <option value="">Select a driver</option> <option value="Lando Norris">Lando Norris</option> <option value="Max Verstappen">Max Verstappen</option> <option value="Oscar Piastri">Oscar Piastri</option> <option value="George Russell">George Russell</option> <option value="Charles Leclerc">Charles Leclerc</option> <option value="Lewis Hamilton">Lewis Hamilton</option> <option value="Andrea Kimi Antonelli">Andrea Kimi Antonelli</option> <option value="Alex Albon">Alex Albon</option> <option value="Carlos Sainz">Carlos Sainz</option> <option value="Fernando Alonso">Fernando Alonso</option> </select>
+     </div><button type="submit" class="primary-btn" style="width: 100%;">Save Changes</button> <button type="button" class="modal-close" onclick="closeModal('editProfileModal')" style="width: 100%;">Cancel</button>
+    </form>
+   </div>
+  </div>
+  <div class="modal-overlay" id="placeBetModal">
+   <div class="modal">
+    <div class="modal-header">
+     Place Your Bet
+    </div>
+    <form id="placeBetForm" onsubmit="placeBet(event)">
+     <div class="form-group"><label class="form-label">Betting On</label>
+      <div style="padding: 0.8rem; background: rgba(220, 0, 0, 0.1); border-radius: 8px; margin-bottom: 1rem;">
+       <div id="betModalInfo"></div>
+      </div>
+     </div>
+     <div class="form-group"><label class="form-label" for="betAmount">Bet Amount ($)</label> <input type="number" id="betAmount" class="form-input" min="10" max="1000" required>
+     </div>
+     <div style="display: flex; gap: 1rem;"><button type="submit" class="primary-btn" style="flex: 1;">Confirm Bet</button> <button type="button" class="modal-close" onclick="closeModal('placeBetModal')" style="flex: 1;">Cancel</button>
+     </div>
+    </form>
+   </div>
+  </div>
+  <div class="modal-overlay" id="createChannelModal">
+   <div class="modal">
+    <div class="modal-header">
+     Create New Channel
+    </div>
+    <form id="createChannelForm" onsubmit="createChannel(event)">
+     <div class="form-group"><label class="form-label" for="channelName">Channel Name</label> <input type="text" id="channelName" class="form-input" required>
+     </div>
+     <div class="form-group"><label class="form-label" for="channelDescription">Description</label> <input type="text" id="channelDescription" class="form-input" required>
+     </div>
+     <div style="display: flex; gap: 1rem;"><button type="submit" class="primary-btn" style="flex: 1;">Create Channel</button> <button type="button" class="modal-close" onclick="closeModal('createChannelModal')" style="flex: 1;">Cancel</button>
+     </div>
+    </form>
+   </div>
+  </div>
+  <div class="modal-overlay" id="resultsModal">
+   <div class="modal">
+    <div class="modal-header">
+     🏁 Race Results
+    </div>
+    <div id="resultsContent"></div><button class="primary-btn" onclick="closeModal('resultsModal')" style="width: 100%; margin-top: 1rem;">Close</button>
+   </div>
+  </div>
+  <div class="modal-overlay" id="newsModal">
+   <div class="modal">
+    <div class="modal-header" id="newsModalTitle">
+     News Article
+    </div>
+    <div id="newsModalContent" style="color: #ddd; line-height: 1.8;"></div><button class="primary-btn" onclick="closeModal('newsModal')" style="width: 100%; margin-top: 1rem;">Close</button>
+   </div>
+  </div>
+  <div class="modal-overlay" id="addFundsModal">
+   <div class="modal">
+    <div class="modal-header">
+     💰 Add Virtual Funds
+    </div>
+    <div style="background: rgba(76, 175, 80, 0.2); border: 1px solid #4caf50; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: #4caf50;">
+     ℹ️ This is virtual currency for educational purposes only. Add funds to continue practicing your F1 predictions!
+    </div>
+    <form id="addFundsForm" onsubmit="addFunds(event)">
+     <div class="form-group"><label class="form-label">Current Balance</label>
+      <div style="font-size: 2rem; font-weight: 700; color: #dc0000; margin-bottom: 1.5rem;" id="currentBalanceDisplay">
+       $0.00
+      </div>
+     </div>
+     <div class="form-group"><label class="form-label" for="addAmount">Amount to Add ($)</label> <input type="number" id="addAmount" class="form-input" min="10" max="10000" step="10" value="100" required>
+     </div>
+     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1.5rem;"><button type="button" class="secondary-btn" onclick="document.getElementById('addAmount').value = '100'" style="padding: 0.6rem;">$100</button> <button type="button" class="secondary-btn" onclick="document.getElementById('addAmount').value = '250'" style="padding: 0.6rem;">$250</button> <button type="button" class="secondary-btn" onclick="document.getElementById('addAmount').value = '500'" style="padding: 0.6rem;">$500</button> <button type="button" class="secondary-btn" onclick="document.getElementById('addAmount').value = '1000'" style="padding: 0.6rem;">$1,000</button>
+     </div>
+     <div style="display: flex; gap: 1rem;"><button type="submit" class="primary-btn" style="flex: 1;">Add Funds</button> <button type="button" class="modal-close" onclick="closeModal('addFundsModal')" style="flex: 1;">Cancel</button>
+     </div>
+    </form>
+   </div>
+  </div>
+  <script>
+    // Global state
+    let currentUser = null;
+    let currentUserPhotoUrl = null;
+    let allUsers = [];
+    let allBets = [];
+    let allChannels = [];
+    let allMessages = [];
+    let allNews = [];
+    let currentChannel = null;
+    let currentBetSelection = null;
+    let fakeMessageInterval = null;
+
+    // 2025 F1 Data
+    const driverStandings2025 = [
+      { position: 1, name: "Lando Norris", team: "McLaren", points: 423, skillRating: 95 },
+      { position: 2, name: "Max Verstappen", team: "Red Bull Racing", points: 421, skillRating: 98 },
+      { position: 3, name: "Oscar Piastri", team: "McLaren", points: 410, skillRating: 90 },
+      { position: 4, name: "George Russell", team: "Mercedes", points: 319, skillRating: 89 },
+      { position: 5, name: "Charles Leclerc", team: "Ferrari", points: 242, skillRating: 92 },
+      { position: 6, name: "Lewis Hamilton", team: "Ferrari", points: 156, skillRating: 94 },
+      { position: 7, name: "Andrea Kimi Antonelli", team: "Mercedes", points: 150, skillRating: 85 },
+      { position: 8, name: "Alex Albon", team: "Williams", points: 73, skillRating: 82 },
+      { position: 9, name: "Carlos Sainz", team: "Williams", points: 64, skillRating: 88 },
+      { position: 10, name: "Fernando Alonso", team: "Aston Martin", points: 56, skillRating: 91 },
+      { position: 11, name: "Nico Hulkenberg", team: "Kick Sauber", points: 51, skillRating: 80 },
+      { position: 12, name: "Isack Hadjar", team: "Racing Bulls", points: 51, skillRating: 78 },
+      { position: 13, name: "Oliver Bearman", team: "Haas", points: 41, skillRating: 77 },
+      { position: 14, name: "Liam Lawson", team: "Racing Bulls", points: 38, skillRating: 79 },
+      { position: 15, name: "Esteban Ocon", team: "Haas", points: 38, skillRating: 81 },
+      { position: 16, name: "Lance Stroll", team: "Aston Martin", points: 33, skillRating: 75 },
+      { position: 17, name: "Yuki Tsunoda", team: "Red Bull Racing", points: 33, skillRating: 83 },
+      { position: 18, name: "Pierre Gasly", team: "Alpine", points: 22, skillRating: 84 },
+      { position: 19, name: "Gabriel Bortoleto", team: "Kick Sauber", points: 19, skillRating: 76 },
+      { position: 20, name: "Franco Colapinto", team: "Alpine", points: 0, skillRating: 74 },
+      { position: 21, name: "Jack Doohan", team: "Alpine", points: 0, skillRating: 73 }
+    ];
+
+    const constructorStandings2025 = [
+      { position: 1, team: "McLaren", points: 833 },
+      { position: 2, team: "Mercedes", points: 469 },
+      { position: 3, team: "Red Bull Racing", points: 451 },
+      { position: 4, team: "Ferrari", points: 398 },
+      { position: 5, team: "Williams", points: 137 },
+      { position: 6, team: "Racing Bulls", points: 92 },
+      { position: 7, team: "Aston Martin", points: 89 },
+      { position: 8, team: "Haas", points: 79 },
+      { position: 9, team: "Kick Sauber", points: 70 },
+      { position: 10, team: "Alpine", points: 22 }
+    ];
+
+    // 2025 Race Winners
+    const raceWinners2025 = [
+      { race: "Bahrain Grand Prix", date: "March 2, 2025", winner: "Max Verstappen", team: "Red Bull Racing", time: "1:31:44.742" },
+      { race: "Saudi Arabian Grand Prix", date: "March 9, 2025", winner: "Lando Norris", team: "McLaren", time: "1:20:43.273" },
+      { race: "Australian Grand Prix", date: "March 16, 2025", winner: "Oscar Piastri", team: "McLaren", time: "1:28:12.691" },
+      { race: "Japanese Grand Prix", date: "April 6, 2025", winner: "Lando Norris", team: "McLaren", time: "1:32:05.421" },
+      { race: "Chinese Grand Prix", date: "April 20, 2025", winner: "Max Verstappen", team: "Red Bull Racing", time: "1:38:45.156" },
+      { race: "Miami Grand Prix", date: "May 4, 2025", winner: "Lando Norris", team: "McLaren", time: "1:33:21.089" },
+      { race: "Emilia Romagna Grand Prix", date: "May 18, 2025", winner: "George Russell", team: "Mercedes", time: "1:29:37.842" },
+      { race: "Monaco Grand Prix", date: "May 25, 2025", winner: "Charles Leclerc", team: "Ferrari", time: "1:42:18.567" }
+    ];
+
+    // FIA Rules and Rulings
+    const fiaRulings = [
+      {
+        title: "New Track Limits Enforcement Technology",
+        date: "March 15, 2025",
+        category: "Technical Regulation",
+        description: "The FIA has introduced advanced AI-powered camera systems to automatically detect track limits violations in real-time. This system has reduced human error in penalty decisions and provides instant feedback to race control."
+      },
+      {
+        title: "Power Unit Cost Cap Adjustment",
+        date: "February 28, 2025",
+        category: "Financial Regulation",
+        description: "FIA announced a 5% increase in the power unit development cost cap for 2026, allowing manufacturers more flexibility as they develop engines for the new technical regulations. The adjustment aims to promote innovation while maintaining cost controls."
+      },
+      {
+        title: "Updated Penalty Guidelines for Collisions",
+        date: "February 10, 2025",
+        category: "Sporting Regulation",
+        description: "Race stewards now have clearer guidelines for assigning penalties in racing incidents. The new framework considers factors like corner ownership, racing line, and driver intent to ensure more consistent penalty decisions across different race weekends."
+      },
+      {
+        title: "Verstappen Receives 10-Second Penalty - Miami GP",
+        date: "May 5, 2025",
+        category: "Race Ruling",
+        description: "Max Verstappen was handed a 10-second time penalty post-race in Miami for gaining a lasting advantage by going off-track while defending position from Lando Norris on Lap 38. The penalty did not affect his final classification."
+      },
+      {
+        title: "McLaren Floor Design Approved After Protest",
+        date: "April 22, 2025",
+        category: "Technical Ruling",
+        description: "Following a protest from Red Bull Racing regarding McLaren's innovative floor design, the FIA technical delegate confirmed that the component complies with all regulations. McLaren is permitted to continue using the design for the remainder of the season."
+      },
+      {
+        title: "Extended DRS Zones for Street Circuits",
+        date: "March 8, 2025",
+        category: "Sporting Regulation",
+        description: "The FIA has authorized longer DRS zones for Monaco, Singapore, and Baku to improve overtaking opportunities. The change follows extensive simulations and driver consultations, aiming to enhance racing spectacle on traditionally processional circuits."
+      }
+    ];
+
+    // 2025 Upcoming Races
+    const upcomingRaces = [
+      { 
+        id: "aus2025", 
+        name: "Australian Grand Prix 2025", 
+        date: "March 16, 2025",
+        bets: [
+          { driver: "Lando Norris", odds: 2.10, skillRating: 95 },
+          { driver: "Max Verstappen", odds: 2.20, skillRating: 98 },
+          { driver: "Oscar Piastri", odds: 4.50, skillRating: 90 },
+          { driver: "George Russell", odds: 6.00, skillRating: 89 },
+          { driver: "Charles Leclerc", odds: 6.50, skillRating: 92 }
+        ]
+      },
+      { 
+        id: "chi2025", 
+        name: "Chinese Grand Prix 2025", 
+        date: "March 23, 2025",
+        bets: [
+          { driver: "Max Verstappen", odds: 2.00, skillRating: 98 },
+          { driver: "Lando Norris", odds: 2.30, skillRating: 95 },
+          { driver: "Oscar Piastri", odds: 4.80, skillRating: 90 },
+          { driver: "Charles Leclerc", odds: 5.50, skillRating: 92 },
+          { driver: "George Russell", odds: 6.20, skillRating: 89 }
+        ]
+      },
+      { 
+        id: "jap2025", 
+        name: "Japanese Grand Prix 2025", 
+        date: "April 6, 2025",
+        bets: [
+          { driver: "Max Verstappen", odds: 1.90, skillRating: 98 },
+          { driver: "Lando Norris", odds: 2.50, skillRating: 95 },
+          { driver: "Charles Leclerc", odds: 5.00, skillRating: 92 },
+          { driver: "Oscar Piastri", odds: 5.50, skillRating: 90 },
+          { driver: "Lewis Hamilton", odds: 7.00, skillRating: 94 }
+        ]
+      },
+      { 
+        id: "bah2025", 
+        name: "Bahrain Grand Prix 2025", 
+        date: "April 13, 2025",
+        bets: [
+          { driver: "Lando Norris", odds: 2.00, skillRating: 95 },
+          { driver: "Max Verstappen", odds: 2.10, skillRating: 98 },
+          { driver: "Oscar Piastri", odds: 4.20, skillRating: 90 },
+          { driver: "George Russell", odds: 5.50, skillRating: 89 },
+          { driver: "Charles Leclerc", odds: 6.00, skillRating: 92 }
+        ]
+      }
+    ];
+
+    // F1 Streaming websites (legal)
+    const f1StreamingSites = [
+      { name: "F1 TV Pro", url: "https://f1tv.formula1.com", description: "Official F1 streaming service with live races, replays, and onboards" },
+      { name: "Sky Sports F1", url: "https://www.skysports.com/f1", description: "UK-based comprehensive F1 coverage" },
+      { name: "ESPN+", url: "https://www.espn.com/watch/espnplus", description: "US streaming for F1 races" },
+      { name: "DAZN", url: "https://www.dazn.com", description: "Available in select countries for F1 streaming" }
+    ];
+
+    // SDK Configuration
+    const defaultConfig = {
+      platform_title: "F1+",
+      tagline: "Advanced F1 Analytics, Predictions & Community",
+      starting_balance_label: "Starting Balance: $1,000",
+      disclaimer_text: "ℹ️ All statistics are based on real F1 data. Betting features use virtual currency only - Educational purposes",
+      background_color: "#0a0a0a",
+      accent_color: "#dc0000",
+      text_color: "#ffffff",
+      card_background: "#1e1e1e",
+      font_family: "Segoe UI",
+      font_size: 16
+    };
+
+    // Data Handler
+    const dataHandler = {
+      onDataChanged(data) {
+        const users = data.filter(item => item.type === 'user');
+        const bets = data.filter(item => item.type === 'bet');
+        const channels = data.filter(item => item.type === 'channel');
+        const messages = data.filter(item => item.type === 'message');
+        const news = data.filter(item => item.type === 'news');
+
+        allUsers = users;
+        allBets = bets;
+        allChannels = channels;
+        allMessages = messages;
+        allNews = news;
+
+        if (users.length > 0 && !currentUser) {
+          currentUser = users[0];
+          currentUserPhotoUrl = users[0].profilePhotoUrl || null;
+        }
+
+        // Create default channels if none exist
+        if (channels.length === 0 && !window.defaultChannelsCreated) {
+          window.defaultChannelsCreated = true;
+          createDefaultChannels();
+        }
+
+        // Create default news if none exist
+        if (news.length === 0 && !window.defaultNewsCreated) {
+          window.defaultNewsCreated = true;
+          createDefaultNews();
+        }
+
+        updateUI();
+        
+        // If we're on the community page, refresh the channels list and messages
+        const communityPage = document.getElementById('communityPage');
+        if (communityPage && communityPage.classList.contains('active')) {
+          renderChannels();
+          
+          // If a channel is selected, refresh the messages immediately
+          if (currentChannel) {
+            if (currentChannel.channelName === 'F1 News') {
+              renderNews();
+            } else {
+              renderMessages();
+            }
+          }
+        }
+      }
+    };
+
+    // Create default channels
+    async function createDefaultChannels() {
+      const defaultChannels = [
+        { name: 'General Discussion', description: 'Talk about all things F1' },
+        { name: 'Race Predictions', description: 'Share your race predictions and strategies' },
+        { name: 'Team Talk', description: 'Discuss your favorite teams and drivers' },
+        { name: 'F1 News', description: 'Latest F1 news and updates', isNews: true }
+      ];
+
+      for (const channel of defaultChannels) {
+        const newChannel = {
+          type: 'channel',
+          channelName: channel.name,
+          channelDescription: channel.description,
+          createdAt: new Date().toISOString()
+        };
+
+        await window.dataSdk.create(newChannel);
+      }
+    }
+
+    // Create default news
+    async function createDefaultNews() {
+      const defaultNews = [
+        {
+          title: "McLaren Extends Championship Lead in 2025",
+          content: "McLaren has solidified their position at the top of the Constructor's Championship with a commanding 364-point lead. Lando Norris and Oscar Piastri continue to deliver consistent performances, making McLaren the team to beat this season.",
+          isOfficial: true
+        },
+        {
+          title: "Verstappen vs Norris: Title Fight Heats Up",
+          content: "With only 2 points separating Max Verstappen and Lando Norris in the Driver's Championship, the 2025 season is shaping up to be one of the closest battles in F1 history. Every race could be decisive.",
+          isOfficial: true
+        },
+        {
+          title: "Hamilton's Ferrari Journey Shows Promise",
+          content: "Lewis Hamilton's move to Ferrari is beginning to pay dividends. After a challenging start, the seven-time world champion has found his rhythm, currently sitting 6th in the standings with 156 points.",
+          isOfficial: false
+        },
+        {
+          title: "Russell Leads Mercedes Revival",
+          content: "George Russell has been the standout performer for Mercedes in 2025, sitting 4th in the championship with 319 points. His consistent point-scoring has helped Mercedes secure 2nd in the Constructor's standings.",
+          isOfficial: false
+        }
+      ];
+
+      for (const newsItem of defaultNews) {
+        const newNews = {
+          type: 'news',
+          newsTitle: newsItem.title,
+          newsContent: newsItem.content,
+          isOfficial: newsItem.isOfficial,
+          newsDate: new Date().toISOString()
+        };
+
+        await window.dataSdk.create(newNews);
+      }
+    }
+
+    // Initialize SDK
+    async function initApp() {
+      const initResult = await window.dataSdk.init(dataHandler);
+      
+      if (!initResult.isOk) {
+        console.error("Failed to initialize Data SDK");
+        return;
+      }
+
+      // Initialize Element SDK
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            document.getElementById('platformTitle').textContent = config.platform_title || defaultConfig.platform_title;
+            document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
+            const startingBalanceLabel = document.getElementById('startingBalanceLabel');
+            if (startingBalanceLabel) {
+              startingBalanceLabel.textContent = config.starting_balance_label || defaultConfig.starting_balance_label;
+            }
+            document.getElementById('disclaimerText').textContent = config.disclaimer_text || defaultConfig.disclaimer_text;
+            
+            const customFont = config.font_family || defaultConfig.font_family;
+            const baseSize = config.font_size || defaultConfig.font_size;
+            const fontStack = `${customFont}, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif`;
+            
+            document.body.style.fontFamily = fontStack;
+            document.body.style.fontSize = `${baseSize}px`;
+            
+            document.querySelectorAll('.card-header, .modal-header, .logo').forEach(el => {
+              el.style.fontSize = `${baseSize * 1.5}px`;
+            });
+            
+            document.querySelectorAll('.primary-btn, .secondary-btn').forEach(el => {
+              el.style.fontSize = `${baseSize * 0.95}px`;
+            });
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  window.elementSdk.setConfig({ background_color: value });
+                }
+              },
+              {
+                get: () => config.accent_color || defaultConfig.accent_color,
+                set: (value) => {
+                  window.elementSdk.setConfig({ accent_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.card_background || defaultConfig.card_background,
+                set: (value) => {
+                  window.elementSdk.setConfig({ card_background: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["platform_title", config.platform_title || defaultConfig.platform_title],
+            ["tagline", config.tagline || defaultConfig.tagline],
+            ["starting_balance_label", config.starting_balance_label || defaultConfig.starting_balance_label],
+            ["disclaimer_text", config.disclaimer_text || defaultConfig.disclaimer_text]
+          ])
+        });
+      }
+
+      updateUI();
+    }
+
+    // Profile Photo Preview
+    function previewProfilePhoto(event, previewId) {
+      const file = event.target.files[0];
+      const preview = document.getElementById(previewId);
+      
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.innerHTML = `<img src="${e.target.result}" class="preview-image" />`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Signup Function
+    async function signup(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('signupUsername').value;
+      const userBio = document.getElementById('signupBio').value;
+      const favoriteTeam = document.getElementById('signupTeam').value;
+      const favoriteDriver = document.getElementById('signupDriver').value;
+      const photoInput = document.getElementById('signupPhotoInput');
+
+      const btn = event.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Creating Account...';
+
+      let profilePhotoUrl = '';
+      if (photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          profilePhotoUrl = e.target.result;
+          await saveSignup();
+        };
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        await saveSignup();
+      }
+
+      async function saveSignup() {
+        const newUser = {
+          type: 'user',
+          username,
+          userBio: userBio || '',
+          profilePhoto: username.charAt(0).toUpperCase(),
+          profilePhotoUrl: profilePhotoUrl,
+          favoriteTeam,
+          favoriteDriver,
+          balance: 1000,
+          totalProfit: 0,
+          createdAt: new Date().toISOString()
+        };
+
+        const result = await window.dataSdk.create(newUser);
+        
+        if (result.isOk) {
+          showToast('Account created successfully! Welcome to F1+!', 'success');
+          
+          // Show navigation and hide login page
+          document.getElementById('mainNavBar').style.display = 'flex';
+          document.getElementById('loginPage').classList.remove('active');
+          document.getElementById('homePage').classList.add('active');
+          
+          // Scroll to top
+          window.scrollTo(0, 0);
+          
+          // Navigate to home
+          navigateTo('home');
+        } else {
+          showToast('Failed to create account. Please try again.', 'error');
+          btn.disabled = false;
+          btn.textContent = '🏁 Create Account & Enter';
+        }
+      }
+    }
+
+    // Create Profile
+    async function createProfile(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const userBio = document.getElementById('userBio').value;
+      const favoriteTeam = document.getElementById('favoriteTeam').value;
+      const favoriteDriver = document.getElementById('favoriteDriver').value;
+      const photoInput = document.getElementById('profilePhotoInput');
+
+      let profilePhotoUrl = '';
+      if (photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          profilePhotoUrl = e.target.result;
+          await saveProfile();
+        };
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        await saveProfile();
+      }
+
+      async function saveProfile() {
+        const newUser = {
+          type: 'user',
+          username,
+          userBio: userBio || '',
+          profilePhoto: username.charAt(0).toUpperCase(),
+          profilePhotoUrl: profilePhotoUrl,
+          favoriteTeam,
+          favoriteDriver,
+          balance: 1000,
+          totalProfit: 0,
+          createdAt: new Date().toISOString()
+        };
+
+        const result = await window.dataSdk.create(newUser);
+        
+        if (result.isOk) {
+          closeModal('createProfileModal');
+          document.getElementById('createProfileForm').reset();
+          document.getElementById('profilePhotoPreview').innerHTML = '';
+        } else {
+          showToast('Failed to create profile. Please try again.', 'error');
+        }
+      }
+    }
+
+    // Update Profile
+    async function updateProfile(event) {
+      event.preventDefault();
+      
+      if (!currentUser) return;
+
+      const username = document.getElementById('editUsername').value;
+      const userBio = document.getElementById('editUserBio').value;
+      const favoriteTeam = document.getElementById('editFavoriteTeam').value;
+      const favoriteDriver = document.getElementById('editFavoriteDriver').value;
+      const photoInput = document.getElementById('editProfilePhotoInput');
+
+      const updatedUser = { ...currentUser };
+      updatedUser.username = username;
+      updatedUser.userBio = userBio || '';
+      updatedUser.favoriteTeam = favoriteTeam;
+      updatedUser.favoriteDriver = favoriteDriver;
+      updatedUser.profilePhoto = username.charAt(0).toUpperCase();
+
+      if (photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          updatedUser.profilePhotoUrl = e.target.result;
+          await saveUpdatedProfile();
+        };
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        await saveUpdatedProfile();
+      }
+
+      async function saveUpdatedProfile() {
+        const result = await window.dataSdk.update(updatedUser);
+        
+        if (result.isOk) {
+          currentUser = updatedUser;
+          currentUserPhotoUrl = updatedUser.profilePhotoUrl;
+          closeModal('editProfileModal');
+          showToast('Profile updated successfully!', 'success');
+          renderProfile();
+        } else {
+          showToast('Failed to update profile. Please try again.', 'error');
+        }
+      }
+    }
+
+    // Navigation
+    function navigateTo(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      
+      const pageElement = document.getElementById(`${page}Page`);
+      if (pageElement) {
+        pageElement.classList.add('active');
+      }
+      
+      // Highlight appropriate nav button
+      const navButtons = document.querySelectorAll('.nav-btn');
+      navButtons.forEach(btn => {
+        const btnText = btn.textContent.toLowerCase();
+        if ((page === 'home' && btnText.includes('home')) ||
+            (page === 'currentStandings' && btnText.includes('standings')) ||
+            (page === 'constructorStandings' && btnText.includes('standings')) ||
+            (page === 'history' && btnText.includes('standings')) ||
+            (page === 'betting' && btnText.includes('predictions')) ||
+            (page === 'news' && btnText.includes('news')) ||
+            (page === 'ai' && btnText.includes('ai')) ||
+            (page === 'community' && btnText.includes('community'))) {
+          btn.classList.add('active');
+        }
+      });
+      
+      if (page === 'profileView') {
+        renderProfile();
+      } else if (page === 'community') {
+        renderChannels();
+        if (allChannels.length > 0 && !currentChannel) {
+          const newsChannel = allChannels.find(ch => ch.channelName === 'F1 News');
+          if (newsChannel) {
+            selectChannel(newsChannel.__backendId);
+          } else {
+            selectChannel(allChannels[0].__backendId);
+          }
+        }
+        // Start fake messages when entering community page if enabled
+        if (fakeMessagesEnabled) {
+          startFakeMessages();
+        }
+      } else {
+        // Stop fake messages when leaving community page
+        stopFakeMessages();
+      }
+      
+      if (page === 'betting') {
+        renderUpcomingRaces();
+        renderActiveBets();
+      } else if (page === 'home') {
+        // Always render home page data
+        setTimeout(() => {
+          renderHomeDrivers();
+          renderHomeTeams();
+          renderNextRacePreview();
+          renderHomeTopBettors();
+        }, 0);
+      } else if (page === 'currentStandings') {
+        renderDriverStandings();
+      } else if (page === 'constructorStandings') {
+        renderConstructorStandings();
+      } else if (page === 'news') {
+        renderNewsArticles();
+        renderRaceWinners();
+        renderFIARulings();
+      }
+    }
+
+    // Toggle Profile Dropdown
+    function toggleProfileDropdown() {
+      const dropdown = document.getElementById('profileDropdown');
+      dropdown.classList.toggle('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('profileDropdown');
+      const avatar = document.getElementById('userAvatar');
+      if (dropdown && avatar && !avatar.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.classList.remove('active');
+      }
+    });
+
+    // Update UI
+    function updateUI() {
+      // Update user info display
+      if (currentUser) {
+        // Show navigation
+        document.getElementById('mainNavBar').style.display = 'flex';
+        
+        // Hide login page if visible
+        const loginPage = document.getElementById('loginPage');
+        if (loginPage.classList.contains('active')) {
+          loginPage.classList.remove('active');
+          document.getElementById('homePage').classList.add('active');
+          
+          // Render home page data immediately
+          setTimeout(() => {
+            renderHomeDrivers();
+            renderHomeTeams();
+            renderNextRacePreview();
+            renderHomeTopBettors();
+          }, 0);
+        }
+        
+        document.getElementById('userInfoSection').style.display = 'flex';
+        
+        // Calculate active bets total
+        const activeBetsTotal = allBets
+          .filter(bet => bet.userId === currentUser.__backendId && bet.status === 'pending')
+          .reduce((sum, bet) => sum + bet.amount, 0);
+        
+        const availableBalance = currentUser.balance - activeBetsTotal;
+        
+        // Update header balance
+        const userBalanceEl = document.getElementById('userBalance');
+        userBalanceEl.innerHTML = `
+          <div style="line-height: 1.4;">
+            <div>$${availableBalance.toFixed(2)}</div>
+            ${activeBetsTotal > 0 ? `<div style="font-size: 0.75rem; opacity: 0.8;">($${activeBetsTotal.toFixed(2)} in bets)</div>` : ''}
+          </div>
+        `;
+        
+        const avatarEl = document.getElementById('userAvatar');
+        if (currentUser.profilePhotoUrl) {
+          avatarEl.innerHTML = `<img src="${currentUser.profilePhotoUrl}" alt="${currentUser.username}" />`;
+        } else {
+          avatarEl.textContent = currentUser.profilePhoto;
+          avatarEl.innerHTML = currentUser.profilePhoto;
+        }
+        
+        const bettingBalance = document.getElementById('bettingBalance');
+        if (bettingBalance) {
+          bettingBalance.innerHTML = `
+            <div style="line-height: 1.4;">
+              <div>$${availableBalance.toFixed(2)}</div>
+              ${activeBetsTotal > 0 ? `<div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.3rem;">($${activeBetsTotal.toFixed(2)} in active bets)</div>` : ''}
+            </div>
+          `;
+        }
+        
+        const startingBalanceLabel = document.getElementById('startingBalanceLabel');
+        if (startingBalanceLabel) {
+          startingBalanceLabel.innerHTML = `
+            Total Balance: $${currentUser.balance.toFixed(2)}
+            ${activeBetsTotal > 0 ? `<br><span style="color: #888;">Available: $${availableBalance.toFixed(2)} | In Bets: $${activeBetsTotal.toFixed(2)}</span>` : ''}
+          `;
+        }
+
+        // Show betting content
+        const bettingContent = document.getElementById('bettingContent');
+        const noBettingProfile = document.getElementById('noBettingProfile');
+        if (bettingContent && noBettingProfile) {
+          bettingContent.style.display = 'block';
+          noBettingProfile.style.display = 'none';
+        }
+
+        // Show profile content
+        const profileContent = document.getElementById('profileContent');
+        const noProfile = document.getElementById('noProfile');
+        if (profileContent && noProfile) {
+          profileContent.style.display = 'block';
+          noProfile.style.display = 'none';
+        }
+      } else {
+        // Hide navigation
+        document.getElementById('mainNavBar').style.display = 'none';
+        
+        // Show login page
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('loginPage').classList.add('active');
+        
+        document.getElementById('userInfoSection').style.display = 'none';
+        
+        const bettingContent = document.getElementById('bettingContent');
+        const noBettingProfile = document.getElementById('noBettingProfile');
+        if (bettingContent && noBettingProfile) {
+          bettingContent.style.display = 'none';
+          noBettingProfile.style.display = 'block';
+        }
+
+        const profileContent = document.getElementById('profileContent');
+        const noProfile = document.getElementById('noProfile');
+        if (profileContent && noProfile) {
+          profileContent.style.display = 'none';
+          noProfile.style.display = 'block';
+        }
+      }
+
+      renderTopBettors();
+      updateSimulateButton();
+    }
+
+    // Render Functions
+    function renderHomeDrivers() {
+      const tbody = document.getElementById('homeDriversBody');
+      tbody.innerHTML = driverStandings2025.slice(0, 5).map(driver => `
+        <tr>
+          <td><span class="position-badge">${driver.position}</span></td>
+          <td><span class="driver-name">${driver.name}</span></td>
+          <td><span class="team-name">${driver.team}</span></td>
+          <td><span class="points">${driver.points}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderHomeTeams() {
+      const tbody = document.getElementById('homeTeamsBody');
+      tbody.innerHTML = constructorStandings2025.slice(0, 5).map(team => `
+        <tr>
+          <td><span class="position-badge">${team.position}</span></td>
+          <td><span class="driver-name">${team.team}</span></td>
+          <td><span class="points">${team.points}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderNextRacePreview() {
+      const container = document.getElementById('nextRacePreview');
+      const nextRace = upcomingRaces[0];
+      
+      container.innerHTML = `
+        <div class="bet-card">
+          <div class="race-title">${nextRace.name}</div>
+          <div class="race-date">📅 ${nextRace.date}</div>
+          <div class="bet-options">
+            ${nextRace.bets.slice(0, 3).map(bet => `
+              <div class="bet-option">
+                <div class="driver-info">
+                  <span>${bet.driver}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <span class="odds">${bet.odds}x</span>
+                  <button class="bet-btn" onclick="navigateTo('betting')">
+                    View All
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHomeTopBettors() {
+      const container = document.getElementById('homeTopBettorsContainer');
+      if (!container) return;
+      
+      const sortedUsers = [...allUsers].sort((a, b) => b.totalProfit - a.totalProfit).slice(0, 5);
+      
+      if (sortedUsers.length === 0) {
+        container.innerHTML = '<div class="loading">No predictors yet</div>';
+        return;
+      }
+
+      container.innerHTML = sortedUsers.map((user, index) => `
+        <div class="bettor-card">
+          <div class="bettor-rank">#${index + 1}</div>
+          <div class="bettor-avatar">
+            ${user.profilePhotoUrl ? `<img src="${user.profilePhotoUrl}" alt="${user.username}" />` : user.profilePhoto}
+          </div>
+          <div class="bettor-info">
+            <div class="bettor-name">${user.username}</div>
+            <div class="bettor-profit ${user.totalProfit < 0 ? 'negative' : ''}">
+              ${user.totalProfit >= 0 ? '+' : ''}$${user.totalProfit.toFixed(2)}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderTopBettors() {
+      const container = document.getElementById('topBettorsContainer');
+      if (!container) return;
+      
+      const sortedUsers = [...allUsers].sort((a, b) => b.totalProfit - a.totalProfit).slice(0, 5);
+      
+      if (sortedUsers.length === 0) {
+        container.innerHTML = '<div class="loading">No predictors yet</div>';
+        return;
+      }
+
+      container.innerHTML = sortedUsers.map((user, index) => `
+        <div class="bettor-card">
+          <div class="bettor-rank">#${index + 1}</div>
+          <div class="bettor-avatar">
+            ${user.profilePhotoUrl ? `<img src="${user.profilePhotoUrl}" alt="${user.username}" />` : user.profilePhoto}
+          </div>
+          <div class="bettor-info">
+            <div class="bettor-name">${user.username}</div>
+            <div class="bettor-profit ${user.totalProfit < 0 ? 'negative' : ''}">
+              ${user.totalProfit >= 0 ? '+' : ''}$${user.totalProfit.toFixed(2)}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderDriverStandings() {
+      const tbody = document.getElementById('driverStandingsBody');
+      tbody.innerHTML = driverStandings2025.map(driver => `
+        <tr>
+          <td><span class="position-badge">${driver.position}</span></td>
+          <td><span class="driver-name">${driver.name}</span></td>
+          <td><span class="team-name">${driver.team}</span></td>
+          <td><span class="points">${driver.points}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderConstructorStandings() {
+      const tbody = document.getElementById('constructorStandingsBody');
+      tbody.innerHTML = constructorStandings2025.map(team => `
+        <tr>
+          <td><span class="position-badge">${team.position}</span></td>
+          <td><span class="driver-name">${team.team}</span></td>
+          <td><span class="points">${team.points}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderNewsArticles() {
+      const container = document.getElementById('newsArticlesContainer');
+      if (!container) return;
+
+      const sortedNews = [...allNews].sort((a, b) => new Date(b.newsDate) - new Date(a.newsDate));
+      
+      if (sortedNews.length === 0) {
+        container.innerHTML = '<div class="loading">No news articles yet</div>';
+        return;
+      }
+
+      container.innerHTML = sortedNews.map(news => {
+        const newsTime = new Date(news.newsDate);
+        const timeString = newsTime.toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric',
+          year: 'numeric'
+        });
+        
+        return `
+          <div class="news-item ${news.isOfficial ? 'official' : ''}" onclick="openNewsModal('${news.__backendId}')">
+            <div class="news-title">
+              ${news.newsTitle}
+              ${news.isOfficial ? '<span class="news-badge">OFFICIAL</span>' : ''}
+            </div>
+            <div class="news-date">${timeString}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderRaceWinners() {
+      const container = document.getElementById('raceWinnersContainer');
+      if (!container) return;
+
+      container.innerHTML = raceWinners2025.slice().reverse().map(race => `
+        <div style="padding: 1rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border-left: 4px solid #dc0000;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <div>
+              <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.3rem;">${race.race}</div>
+              <div style="color: #888; font-size: 0.85rem;">${new Date(race.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 700; color: #dc0000; font-size: 1.1rem;">🏆 ${race.winner}</div>
+              <div style="color: #888; font-size: 0.85rem;">${race.team}</div>
+            </div>
+          </div>
+          <div style="color: #4caf50; font-size: 0.85rem; font-family: monospace;">⏱️ ${race.time}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderFIARulings() {
+      const container = document.getElementById('fiaRulingsContainer');
+      if (!container) return;
+
+      const categoryColors = {
+        'Technical Regulation': '#4a90e2',
+        'Financial Regulation': '#f39c12',
+        'Sporting Regulation': '#9b59b6',
+        'Race Ruling': '#e74c3c',
+        'Technical Ruling': '#3498db'
+      };
+
+      container.innerHTML = fiaRulings.map(ruling => {
+        const categoryColor = categoryColors[ruling.category] || '#888';
+        
+        return `
+          <div style="padding: 1rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border-left: 4px solid ${categoryColor}; cursor: pointer; transition: all 0.3s;" 
+               onclick="openFIARulingModal('${ruling.title}', '${ruling.date}', '${ruling.category}', \`${ruling.description.replace(/`/g, '\\`')}\`)">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+              <div style="flex: 1;">
+                <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.3rem;">${ruling.title}</div>
+                <div style="color: #888; font-size: 0.85rem;">${new Date(ruling.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+              </div>
+            </div>
+            <div style="display: inline-block; background: ${categoryColor}; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
+              ${ruling.category}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openFIARulingModal(title, date, category, description) {
+      const categoryColors = {
+        'Technical Regulation': '#4a90e2',
+        'Financial Regulation': '#f39c12',
+        'Sporting Regulation': '#9b59b6',
+        'Race Ruling': '#e74c3c',
+        'Technical Ruling': '#3498db'
+      };
+      const categoryColor = categoryColors[category] || '#888';
+
+      document.getElementById('newsModalTitle').textContent = title;
+      document.getElementById('newsModalContent').innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <span style="display: inline-block; background: ${categoryColor}; color: white; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 700; margin-right: 0.5rem;">
+            ${category}
+          </span>
+          <span style="color: #888;">
+            ${new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </span>
+        </div>
+        <p style="line-height: 1.8;">${description}</p>
+      `;
+      
+      openModal('newsModal');
+    }
+
+    function renderUpcomingRaces() {
+      const container = document.getElementById('upcomingRacesContainer');
+      if (!container) return;
+
+      container.innerHTML = upcomingRaces.map(race => `
+        <div class="bet-card">
+          <div class="race-title">${race.name}</div>
+          <div class="race-date">📅 ${race.date}</div>
+          <div class="bet-options">
+            ${race.bets.map(bet => `
+              <div class="bet-option">
+                <div class="driver-info">
+                  <span>${bet.driver}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <span class="odds">${bet.odds}x</span>
+                  <button class="bet-btn" onclick="openBetModal('${race.id}', '${race.name}', '${bet.driver}', ${bet.odds}, ${bet.skillRating})">
+                    Bet
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderActiveBets() {
+      const container = document.getElementById('activeBetsContainer');
+      if (!container || !currentUser) return;
+
+      const userBets = allBets.filter(bet => bet.userId === currentUser.__backendId && bet.status === 'pending');
+      
+      if (userBets.length === 0) {
+        container.innerHTML = '<div class="loading">No active bets</div>';
+        return;
+      }
+
+      container.innerHTML = userBets.map(bet => `
+        <div class="bet-option" style="margin-bottom: 1rem;">
+          <div>
+            <div style="font-weight: 700;">${bet.race}</div>
+            <div style="color: #888; font-size: 0.9rem;">${bet.selection} @ ${bet.odds}x</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; color: #dc0000;">$${bet.amount}</div>
+            <div style="color: #4caf50; font-size: 0.9rem;">Potential: $${(bet.amount * bet.odds).toFixed(2)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderProfile() {
+      if (!currentUser) return;
+
+      const userBets = allBets.filter(bet => bet.userId === currentUser.__backendId);
+      const wonBets = userBets.filter(bet => bet.status === 'won').length;
+      const lostBets = userBets.filter(bet => bet.status === 'lost').length;
+      const winRate = userBets.length > 0 ? ((wonBets / userBets.length) * 100).toFixed(1) : 0;
+      
+      const container = document.getElementById('profileContent');
+      container.innerHTML = `
+        <div class="profile-container">
+          <div class="profile-header">
+            <div class="profile-avatar-large">
+              ${currentUser.profilePhotoUrl ? `<img src="${currentUser.profilePhotoUrl}" alt="${currentUser.username}" />` : currentUser.profilePhoto}
+            </div>
+            <div class="profile-info">
+              <div class="profile-username">${currentUser.username}</div>
+              ${currentUser.userBio ? `<div class="profile-bio">${currentUser.userBio}</div>` : ''}
+              <div style="color: #888; margin-top: 0.5rem;">
+                🏎��� ${currentUser.favoriteTeam} | 🏁 ${currentUser.favoriteDriver}
+              </div>
+              <div class="profile-stats">
+                <div class="stat-item">
+                  <div class="stat-value">$${currentUser.balance.toFixed(2)}</div>
+                  <div class="stat-label">Balance</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value ${currentUser.totalProfit < 0 ? 'negative' : ''}">
+                    ${currentUser.totalProfit >= 0 ? '+' : ''}$${currentUser.totalProfit.toFixed(2)}
+                  </div>
+                  <div class="stat-label">Total P/L</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">${userBets.length}</div>
+                  <div class="stat-label">Total Bets</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">${wonBets}</div>
+                  <div class="stat-label">Won</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">${winRate}%</div>
+                  <div class="stat-label">Win Rate</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">📊 Betting History</div>
+            ${userBets.length === 0 ? '<div class="loading">No bets yet</div>' : `
+              <table class="standings-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Race</th>
+                    <th>Selection</th>
+                    <th>Amount</th>
+                    <th>Odds</th>
+                    <th>Status</th>
+                    <th>Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${userBets.slice().reverse().map(bet => `
+                    <tr>
+                      <td>${new Date(bet.betDate).toLocaleDateString()}</td>
+                      <td>${bet.race}</td>
+                      <td>${bet.selection}</td>
+                      <td>$${bet.amount}</td>
+                      <td>${bet.odds}x</td>
+                      <td><span style="color: ${bet.status === 'won' ? '#4caf50' : bet.status === 'lost' ? '#f44336' : '#888'}">${bet.status.toUpperCase()}</span></td>
+                      <td style="color: ${parseFloat(bet.result.replace('$', '').replace('+', '')) > 0 ? '#4caf50' : parseFloat(bet.result.replace('$', '').replace('+', '')) < 0 ? '#f44336' : '#888'}">
+                        ${bet.result}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `}
+          </div>
+        </div>
+      `;
+
+      // Populate edit modal
+      document.getElementById('editUsername').value = currentUser.username;
+      document.getElementById('editUserBio').value = currentUser.userBio || '';
+      document.getElementById('editFavoriteTeam').value = currentUser.favoriteTeam;
+      document.getElementById('editFavoriteDriver').value = currentUser.favoriteDriver;
+      
+      if (currentUser.profilePhotoUrl) {
+        document.getElementById('editProfilePhotoPreview').innerHTML = `<img src="${currentUser.profilePhotoUrl}" class="preview-image" />`;
+      }
+    }
+
+    function renderChannels() {
+      const container = document.getElementById('channelsList');
+      
+      if (allChannels.length === 0) {
+        container.innerHTML = `
+          <div class="loading" style="padding: 1rem; text-align: center;">
+            No channels yet.<br>Create one!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = allChannels.map(channel => {
+        const isNews = channel.channelName === 'F1 News';
+        return `
+          <div class="channel-item ${currentChannel && currentChannel.__backendId === channel.__backendId ? 'active' : ''}" 
+               onclick="selectChannel('${channel.__backendId}')">
+            <span style="font-weight: 700;">${isNews ? '📰' : '#'}</span> ${channel.channelName}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectChannel(channelId) {
+      currentChannel = allChannels.find(ch => ch.__backendId === channelId);
+      if (!currentChannel) return;
+
+      const isNews = currentChannel.channelName === 'F1 News';
+      document.getElementById('currentChannelName').textContent = `${isNews ? '📰' : '#'} ${currentChannel.channelName}`;
+      
+      const messageInput = document.getElementById('messageInput');
+      const sendBtn = document.querySelector('.send-btn');
+      
+      if (isNews) {
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        messageInput.placeholder = "News channel - read only";
+      } else {
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        messageInput.placeholder = "Type a message...";
+      }
+      
+      renderChannels();
+      
+      if (isNews) {
+        renderNews();
+      } else {
+        renderMessages();
+      }
+    }
+
+    function renderNews() {
+      const container = document.getElementById('chatMessages');
+      
+      if (!currentChannel || currentChannel.channelName !== 'F1 News') {
+        return;
+      }
+
+      const sortedNews = [...allNews].sort((a, b) => new Date(b.newsDate) - new Date(a.newsDate));
+      
+      if (sortedNews.length === 0) {
+        container.innerHTML = '<div class="loading">No news yet</div>';
+        return;
+      }
+
+      container.innerHTML = sortedNews.map(news => {
+        const newsTime = new Date(news.newsDate);
+        const timeString = newsTime.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric',
+          year: 'numeric'
+        });
+        
+        return `
+          <div class="news-item ${news.isOfficial ? 'official' : ''}" onclick="openNewsModal('${news.__backendId}')">
+            <div class="news-title">
+              ${news.newsTitle}
+              ${news.isOfficial ? '<span class="news-badge">OFFICIAL</span>' : ''}
+            </div>
+            <div class="news-date">${timeString}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openNewsModal(newsId) {
+      const news = allNews.find(n => n.__backendId === newsId);
+      if (!news) return;
+
+      document.getElementById('newsModalTitle').textContent = news.newsTitle;
+      document.getElementById('newsModalContent').innerHTML = `
+        <div style="margin-bottom: 1rem; color: #888;">
+          ${new Date(news.newsDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          ${news.isOfficial ? '<span class="news-badge">OFFICIAL</span>' : ''}
+        </div>
+        <p>${news.newsContent}</p>
+      `;
+      
+      openModal('newsModal');
+    }
+
+    function renderMessages() {
+      const container = document.getElementById('chatMessages');
+      
+      if (!currentChannel) {
+        container.innerHTML = '<div class="loading">Select a channel to start chatting</div>';
+        return;
+      }
+
+      const channelMessages = allMessages
+        .filter(msg => msg.channelId === currentChannel.__backendId)
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      
+      if (channelMessages.length === 0) {
+        container.innerHTML = '<div class="loading">No messages yet. Start the conversation!</div>';
+        return;
+      }
+
+      container.innerHTML = channelMessages.map(msg => {
+        const msgTime = new Date(msg.timestamp);
+        const timeString = msgTime.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        
+        return `
+          <div class="message">
+            <div class="message-author">
+              <div class="message-avatar">
+                ${msg.authorPhotoUrl ? `<img src="${msg.authorPhotoUrl}" alt="${msg.author}" />` : msg.author.charAt(0).toUpperCase()}
+              </div>
+              ${msg.author}
+              <span class="message-time">${timeString}</span>
+            </div>
+            <div class="message-text">${escapeHtml(msg.messageText)}</div>
+          </div>
+        `;
+      }).join('');
+
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+      }, 0);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Betting Functions
+    function openBetModal(raceId, raceName, driver, odds, skillRating) {
+      if (!currentUser) {
+        showToast('Please create a profile first!', 'warning');
+        return;
+      }
+
+      currentBetSelection = { raceId, raceName, driver, odds, skillRating };
+      
+      document.getElementById('betModalInfo').innerHTML = `
+        <div style="font-weight: 700; font-size: 1.1rem;">${raceName}</div>
+        <div style="color: #888; margin-top: 0.3rem;">${driver} @ ${odds}x</div>
+      `;
+      
+      openModal('placeBetModal');
+    }
+
+    async function placeBet(event) {
+      event.preventDefault();
+      
+      if (!currentUser || !currentBetSelection) return;
+
+      const amount = parseFloat(document.getElementById('betAmount').value);
+      
+      // Calculate available balance
+      const activeBetsTotal = allBets
+        .filter(bet => bet.userId === currentUser.__backendId && bet.status === 'pending')
+        .reduce((sum, bet) => sum + bet.amount, 0);
+      
+      const availableBalance = currentUser.balance - activeBetsTotal;
+      
+      if (amount > availableBalance) {
+        showToast(`Insufficient balance! Available: $${availableBalance.toFixed(2)}`, 'error');
+        return;
+      }
+
+      if (amount < 10) {
+        showToast('Minimum bet is $10', 'error');
+        return;
+      }
+
+      const btn = event.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Placing Bet...';
+
+      const newBet = {
+        type: 'bet',
+        userId: currentUser.__backendId,
+        betType: 'race_winner',
+        race: currentBetSelection.raceName,
+        raceId: currentBetSelection.raceId,
+        selection: currentBetSelection.driver,
+        amount: amount,
+        odds: currentBetSelection.odds,
+        status: 'pending',
+        result: '-',
+        betDate: new Date().toISOString()
+      };
+
+      const betResult = await window.dataSdk.create(newBet);
+      
+      if (betResult.isOk) {
+        const container = document.getElementById('activeBetsContainer');
+        const userBets = [...allBets, newBet].filter(bet => bet.userId === currentUser.__backendId && bet.status === 'pending');
+        container.innerHTML = userBets.map(bet => `
+          <div class="bet-option" style="margin-bottom: 1rem;">
+            <div>
+              <div style="font-weight: 700;">${bet.race}</div>
+              <div style="color: #888; font-size: 0.9rem;">${bet.selection} @ ${bet.odds}x</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 700; color: #dc0000;">$${bet.amount}</div>
+              <div style="color: #4caf50; font-size: 0.9rem;">Potential: $${(bet.amount * bet.odds).toFixed(2)}</div>
+            </div>
+          </div>
+        `).join('');
+        
+        updateSimulateButton();
+        
+        closeModal('placeBetModal');
+        document.getElementById('placeBetForm').reset();
+        showToast(`Bet placed! $${amount} on ${currentBetSelection.driver}`, 'success');
+      } else {
+        showToast('Failed to place bet. Please try again.', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Confirm Bet';
+    }
+
+    // Race Simulation
+    function simulateRace(raceId) {
+      const race = upcomingRaces.find(r => r.id === raceId);
+      if (!race) return null;
+
+      const drivers = race.bets.map(bet => ({
+        driver: bet.driver,
+        skillRating: bet.skillRating
+      }));
+
+      const weightedPool = [];
+      drivers.forEach(d => {
+        const weight = Math.floor(d.skillRating / 10);
+        for (let i = 0; i < weight; i++) {
+          weightedPool.push(d.driver);
+        }
+      });
+
+      const winner = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+      return winner;
+    }
+
+    async function simulateAllRaces() {
+      if (!currentUser) return;
+
+      const pendingBets = allBets.filter(bet => bet.userId === currentUser.__backendId && bet.status === 'pending');
+      
+      if (pendingBets.length === 0) {
+        showToast('No active bets to simulate', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('simulateAllBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Simulating races...';
+
+      const results = [];
+      let totalWinnings = 0;
+      let totalLosses = 0;
+
+      const betsByRace = {};
+      pendingBets.forEach(bet => {
+        if (!betsByRace[bet.raceId]) {
+          betsByRace[bet.raceId] = [];
+        }
+        betsByRace[bet.raceId].push(bet);
+      });
+
+      for (const raceId in betsByRace) {
+        const winner = simulateRace(raceId);
+        const raceBets = betsByRace[raceId];
+
+        for (const bet of raceBets) {
+          const won = bet.selection === winner;
+          const payout = won ? bet.amount * bet.odds : 0;
+          const profit = won ? payout - bet.amount : -bet.amount;
+
+          if (won) {
+            totalWinnings += payout;
+          } else {
+            totalLosses += bet.amount;
+          }
+
+          results.push({
+            race: bet.race,
+            selection: bet.selection,
+            winner: winner,
+            won: won,
+            profit: profit
+          });
+
+          const updatedBet = { ...bet };
+          updatedBet.status = won ? 'won' : 'lost';
+          updatedBet.result = won ? `+$${profit.toFixed(2)}` : `-$${bet.amount.toFixed(2)}`;
+
+          await window.dataSdk.update(updatedBet);
+        }
+      }
+
+      // Calculate balance change: add winnings (bets already locked in balance, just add profit)
+      const updatedUser = { ...currentUser };
+      updatedUser.totalProfit += (totalWinnings - totalLosses);
+
+      await window.dataSdk.update(updatedUser);
+      currentUser = updatedUser;
+
+      showResultsModal(results, totalWinnings, totalLosses);
+
+      btn.disabled = false;
+      btn.textContent = '🎲 Simulate All Races & Get Results';
+    }
+
+    function showResultsModal(results, totalWinnings, totalLosses) {
+      const netProfit = totalWinnings - totalLosses;
+      const wonCount = results.filter(r => r.won).length;
+      const lostCount = results.filter(r => !r.won).length;
+
+      const content = document.getElementById('resultsContent');
+      content.innerHTML = `
+        <div style="margin-bottom: 1.5rem; padding: 1.5rem; background: ${netProfit >= 0 ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)'}; border-radius: 8px; border: 2px solid ${netProfit >= 0 ? '#4caf50' : '#f44336'};">
+          <div style="font-size: 1.8rem; font-weight: 700; color: ${netProfit >= 0 ? '#4caf50' : '#f44336'}; margin-bottom: 0.5rem;">
+            ${netProfit >= 0 ? '+' : ''}$${netProfit.toFixed(2)}
+          </div>
+          <div style="color: #ddd;">
+            ${wonCount} wins ��� ${lostCount} losses
+          </div>
+        </div>
+
+        ${results.map(result => `
+          <div style="padding: 1rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border-left: 4px solid ${result.won ? '#4caf50' : '#f44336'};">
+            <div style="font-weight: 700; margin-bottom: 0.3rem;">${result.race}</div>
+            <div style="color: #888; font-size: 0.9rem; margin-bottom: 0.5rem;">
+              Your bet: ${result.selection} | Winner: ${result.winner}
+            </div>
+            <div style="font-weight: 700; color: ${result.won ? '#4caf50' : '#f44336'};">
+              ${result.won ? 'WON' : 'LOST'} • ${result.profit >= 0 ? '+' : ''}$${result.profit.toFixed(2)}
+            </div>
+          </div>
+        `).join('')}
+      `;
+
+      openModal('resultsModal');
+    }
+
+    function updateSimulateButton() {
+      const btn = document.getElementById('simulateAllBtn');
+      if (!btn || !currentUser) return;
+
+      const pendingBets = allBets.filter(bet => bet.userId === currentUser.__backendId && bet.status === 'pending');
+      btn.disabled = pendingBets.length === 0;
+    }
+
+    // AI Assistant - Enhanced with ChatGPT-like capabilities
+    let aiChatHistory = [];
+
+    async function sendAIMessage() {
+      const input = document.getElementById('aiChatInput');
+      const question = input.value.trim();
+      
+      if (!question) return;
+
+      const sendBtn = document.getElementById('aiSendBtn');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Thinking...';
+
+      // Add user message to history
+      addAIMessageToHistory('user', question);
+      input.value = '';
+
+      // Generate AI response
+      const response = await generateAIResponse(question);
+      addAIMessageToHistory('ai', response);
+
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send';
+      input.focus();
+    }
+
+    function addAIMessageToHistory(sender, message) {
+      const container = document.getElementById('aiChatHistory');
+      
+      // Remove welcome message if it exists
+      const welcomeMsg = container.querySelector('[style*="text-align: center"]');
+      if (welcomeMsg) {
+        welcomeMsg.remove();
+      }
+
+      const messageDiv = document.createElement('div');
+      messageDiv.style.cssText = `
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        ${sender === 'user' 
+          ? 'background: rgba(220, 0, 0, 0.2); border-left: 3px solid #dc0000; margin-left: 20%;' 
+          : 'background: rgba(74, 144, 226, 0.2); border-left: 3px solid #4a90e2; margin-right: 20%;'}
+      `;
+
+      const senderLabel = document.createElement('div');
+      senderLabel.style.cssText = 'font-weight: 700; margin-bottom: 0.5rem; color: ' + (sender === 'user' ? '#dc0000' : '#4a90e2');
+      senderLabel.textContent = sender === 'user' ? '👤 You' : '🤖 AI Assistant';
+
+      const messageText = document.createElement('div');
+      messageText.style.cssText = 'color: #ddd; line-height: 1.6;';
+      messageText.innerHTML = message;
+
+      messageDiv.appendChild(senderLabel);
+      messageDiv.appendChild(messageText);
+      container.appendChild(messageDiv);
+
+      // Scroll to bottom
+      container.scrollTop = container.scrollHeight;
+
+      // Store in history
+      aiChatHistory.push({ sender, message, timestamp: new Date() });
+    }
+
+    async function generateAIResponse(question) {
+      const lowerQuestion = question.toLowerCase();
+      
+      // Context about current F1 season
+      const context2025 = {
+        championshipLeader: "Lando Norris (423 points)",
+        secondPlace: "Max Verstappen (421 points)",
+        constructorLeader: "McLaren (833 points)",
+        topTeams: ["McLaren", "Mercedes", "Red Bull Racing", "Ferrari"],
+        notableDrivers: {
+          norris: "Lando Norris - Leading championship with 423 points, McLaren driver",
+          verstappen: "Max Verstappen - 2nd place with 421 points, Red Bull Racing",
+          piastri: "Oscar Piastri - 3rd place with 410 points, McLaren",
+          russell: "George Russell - 4th place with 319 points, Mercedes",
+          leclerc: "Charles Leclerc - 5th place with 242 points, Ferrari",
+          hamilton: "Lewis Hamilton - 6th place with 156 points, moved to Ferrari in 2025"
+        }
+      };
+
+      // Championship and standings questions
+      if (lowerQuestion.includes('championship') || lowerQuestion.includes('leading') || lowerQuestion.includes('leader')) {
+        return `The 2025 F1 World Championship is incredibly tight! <strong>Lando Norris</strong> leads with <strong>423 points</strong>, but <strong>Max Verstappen</strong> is just 2 points behind with <strong>421 points</strong>. This is shaping up to be one of the closest championship battles in F1 history!<br><br>In the Constructor's Championship, <strong>McLaren</strong> dominates with <strong>833 points</strong>, thanks to both Norris and Oscar Piastri (410 pts) delivering consistent performances.`;
+      }
+
+      // Driver comparisons
+      if ((lowerQuestion.includes('norris') && lowerQuestion.includes('verstappen')) || 
+          (lowerQuestion.includes('compare') && (lowerQuestion.includes('driver') || lowerQuestion.includes('norris') || lowerQuestion.includes('verstappen')))) {
+        return `<strong>Lando Norris vs Max Verstappen - 2025 Title Fight:</strong><br><br>
+        <strong>Lando Norris (McLaren)</strong> - 423 points<br>
+        • Exceptional consistency and race pace<br>
+        • Benefits from McLaren's dominant car<br>
+        • Improved tire management and racecraft<br>
+        • Strong in qualifying and wet conditions<br><br>
+        <strong>Max Verstappen (Red Bull)</strong> - 421 points<br>
+        • 3x World Champion with unmatched experience<br>
+        • Master of racecraft and overtaking<br>
+        • Exceptional in pressure situations<br>
+        • Can extract maximum from the car<br><br>
+        The battle is separated by just <strong>2 points</strong> - every race could decide the championship!`;
+      }
+
+      // Team questions
+      if (lowerQuestion.includes('mclaren') && !lowerQuestion.includes('track')) {
+        return `<strong>McLaren - 2025 Season Dominance:</strong><br><br>
+        McLaren is having an exceptional season, leading the Constructor's Championship with <strong>833 points</strong> - a massive 364-point lead over Mercedes.<br><br>
+        <strong>Key Strengths:</strong><br>
+        • Both drivers consistently scoring podiums<br>
+        • Lando Norris (423 pts) leading Drivers' Championship<br>
+        • Oscar Piastri (410 pts) proving to be perfect #2<br>
+        • Balanced car setup working on all circuit types<br>
+        • Strong race strategy and pit stop execution<br><br>
+        They're the team to beat this season!`;
+      }
+
+      if (lowerQuestion.includes('ferrari')) {
+        return `<strong>Ferrari - 2025 Season Update:</strong><br><br>
+        Ferrari sits 4th in the Constructor's Championship with <strong>398 points</strong>. The team has incredible driver talent with Lewis Hamilton joining Charles Leclerc, but they're working to extract maximum performance from their package.<br><br>
+        <strong>Charles Leclerc:</strong> 242 points (5th in championship)<br>
+        <strong>Lewis Hamilton:</strong> 156 points (6th in championship)<br><br>
+        Hamilton's technical feedback and development experience could be crucial for Ferrari's 2026 car. The partnership with Leclerc shows promise but needs more race wins.`;
+      }
+
+      if (lowerQuestion.includes('red bull')) {
+        return `<strong>Red Bull Racing - 2025 Season:</strong><br><br>
+        Red Bull sits 3rd in the Constructor's Championship with <strong>451 points</strong>. Max Verstappen is fighting for the Drivers' title (421 pts, 2nd place), but the team is missing consistent points from their second driver.<br><br>
+        <strong>Situation:</strong><br>
+        • Verstappen only 2 points behind Norris<br>
+        • Car performance competitive but not dominant<br>
+        • Need second driver to score more consistently<br>
+        • Focus on optimizing current package<br><br>
+        Verstappen's experience could be the difference in this tight championship!`;
+      }
+
+      if (lowerQuestion.includes('mercedes')) {
+        return `<strong>Mercedes - 2025 Season Recovery:</strong><br><br>
+        Mercedes is 2nd in the Constructor's Championship with <strong>469 points</strong>, largely thanks to George Russell's exceptional performances.<br><br>
+        <strong>George Russell:</strong> 319 points (4th in championship)<br>
+        <strong>Kimi Antonelli:</strong> 150 points (7th in championship)<br><br>
+        Russell has been the standout performer, consistently outperforming expectations. Antonelli, in his rookie season, shows flashes of brilliance and is developing well alongside his experienced teammate.`;
+      }
+
+      // Driver-specific questions
+      if (lowerQuestion.includes('hamilton')) {
+        return `<strong>Lewis Hamilton - Ferrari Move in 2025:</strong><br><br>
+        The 7-time World Champion made the blockbuster move to Ferrari for 2025. Currently sitting 6th with <strong>156 points</strong>, Hamilton is adapting to his new team.<br><br>
+        <strong>Key Points:</strong><br>
+        • Partnership with Charles Leclerc creating buzz<br>
+        • Bringing technical expertise to Ferrari<br>
+        • Still shows race-winning pace at 40 years old<br>
+        • His feedback crucial for 2026 car development<br><br>
+        While not in title contention this year, Hamilton's experience could help Ferrari return to championship form in 2026.`;
+      }
+
+      if (lowerQuestion.includes('piastri')) {
+        return `<strong>Oscar Piastri - Breakout Season 2025:</strong><br><br>
+        Piastri is having an exceptional season, sitting 3rd in the championship with <strong>410 points</strong>!<br><br>
+        <strong>Highlights:</strong><br>
+        • Incredibly consistent - rarely finishes outside podium positions<br>
+        • Perfect #2 to Norris, allowing team orders when needed<br>
+        • Shows race-winning pace regularly<br>
+        • Key to McLaren's Constructor's dominance<br><br>
+        At just 23 years old, Piastri is proving he's a future championship contender!`;
+      }
+
+      if (lowerQuestion.includes('russell')) {
+        return `<strong>George Russell - Mercedes' Leading Light:</strong><br><br>
+        Russell is leading Mercedes' charge in 2025, sitting 4th with <strong>319 points</strong>.<br><br>
+        <strong>Performance:</strong><br>
+        • Consistently the faster Mercedes driver<br>
+        • Multiple race wins and podiums<br>
+        • Excellent qualifying performances<br>
+        • Key to Mercedes' 2nd place in Constructor's<br><br>
+        Russell is proving why Mercedes chose him as their future - he's delivering championship-caliber performances!`;
+      }
+
+      // Technical F1 questions
+      if (lowerQuestion.includes('drs')) {
+        return `<strong>DRS (Drag Reduction System) Explained:</strong><br><br>
+        DRS is a driver-adjustable rear wing system designed to aid overtaking in F1.<br><br>
+        <strong>How It Works:</strong><br>
+        • Opens a flap in the rear wing to reduce drag<br>
+        • Increases top speed by 10-15 km/h<br>
+        • Only available in designated "DRS zones"<br>
+        • Can only be used if within 1 second of car ahead<br>
+        • Disabled in wet conditions for safety<br><br>
+        <strong>Strategy:</strong> Drivers time DRS activation to maximize overtaking opportunities while defending their position. It's crucial for modern F1 racing!`;
+      }
+
+      if (lowerQuestion.includes('tire') || lowerQuestion.includes('tyre')) {
+        return `<strong>F1 Tire Strategy - 2025:</strong><br><br>
+        Pirelli provides 5 tire compounds for F1:<br><br>
+        <strong>Dry Compounds:</strong><br>
+        • <span style="color: #dc0000;">Soft (Red)</span> - Fastest, wears quickly<br>
+        • <span style="color: #ffd700;">Medium (Yellow)</span> - Balanced performance<br>
+        • <span style="color: #fff;">Hard (White)</span> - Longest lasting, slower<br><br>
+        <strong>Wet Compounds:</strong><br>
+        • <span style="color: #4caf50;">Intermediate (Green)</span> - Light rain<br>
+        • <span style="color: #4a90e2;">Wet (Blue)</span> - Heavy rain<br><br>
+        <strong>Rules:</strong> Must use 2 different compounds in dry races. Strategy involves balancing speed vs tire life!`;
+      }
+
+      if (lowerQuestion.includes('pit stop') || lowerQuestion.includes('pitstop')) {
+        return `<strong>F1 Pit Stops - Speed & Strategy:</strong><br><br>
+        Modern F1 pit stops are incredibly fast!<br><br>
+        <strong>Typical Duration:</strong> 2-3 seconds for tire change<br>
+        <strong>Record:</strong> Red Bull - 1.82 seconds (2019)<br><br>
+        <strong>Pit Crew:</strong><br>
+        • 3 mechanics per wheel (12 total)<br>
+        • 1 front jack operator<br>
+        • 1 rear jack operator<br>
+        • Multiple stabilizers and engineers<br><br>
+        <strong>Strategy:</strong> Teams decide pit timing based on tire wear, race position, traffic, and weather. Undercuts (pitting early) and overcuts (staying out longer) are key tactics!`;
+      }
+
+      if (lowerQuestion.includes('qualifying') || lowerQuestion.includes('quali')) {
+        return `<strong>F1 Qualifying Format - 2025:</strong><br><br>
+        Qualifying determines starting grid positions through 3 knockout sessions:<br><br>
+        <strong>Q1 (18 minutes):</strong><br>
+        • All 20 drivers compete<br>
+        • Slowest 5 eliminated (positions 16-20)<br><br>
+        <strong>Q2 (15 minutes):</strong><br>
+        • 15 drivers remaining<br>
+        • Slowest 5 eliminated (positions 11-15)<br>
+        • Top 10 must start race on Q2 tires<br><br>
+        <strong>Q3 (12 minutes):</strong><br>
+        • Top 10 battle for pole position<br>
+        • Determines grid positions 1-10<br><br>
+        <strong>Pole Position:</strong> P1 grid spot - huge advantage!`;
+      }
+
+      // Track and circuit questions
+      if (lowerQuestion.includes('track') || lowerQuestion.includes('circuit')) {
+        if (lowerQuestion.includes('monaco')) {
+          return `<strong>Monaco Grand Prix - The Crown Jewel:</strong><br><br>
+          The most prestigious race in F1, held on the streets of Monte Carlo.<br><br>
+          <strong>Characteristics:</strong><br>
+          • Narrowest track on calendar<br>
+          • Extremely difficult to overtake<br>
+          • Qualifying is crucial<br>
+          • High risk of Safety Cars<br>
+          • Requires maximum downforce<br><br>
+          <strong>Famous Corners:</strong> Casino Square, Mirabeau, Tunnel, Swimming Pool<br><br>
+          Winning at Monaco is every driver's dream!`;
+        }
+        
+        if (lowerQuestion.includes('monza')) {
+          return `<strong>Monza - The Temple of Speed:</strong><br><br>
+          Located in Italy, Monza is F1's fastest circuit.<br><br>
+          <strong>Characteristics:</strong><br>
+          • Highest average speed (~260 km/h)<br>
+          • Long straights favor power<br>
+          • Historic Tifosi (Ferrari fans)<br>
+          • Low downforce setup required<br>
+          • Slipstreaming crucial<br><br>
+          <strong>Famous Corners:</strong> Parabolica, Lesmo, Ascari<br><br>
+          Power and bravery win at Monza!`;
+        }
+
+        return `<strong>F1 Circuits - Different Characteristics:</strong><br><br>
+        F1 features diverse circuits with unique challenges:<br><br>
+        <strong>Street Circuits:</strong> Monaco, Singapore, Baku<br>
+        • Tight, narrow, unforgiving walls<br><br>
+        <strong>High-Speed:</strong> Monza, Spa, Silverstone<br>
+        • Long straights, fast corners<br><br>
+        <strong>Technical:</strong> Suzuka, Barcelona, Hungary<br>
+        • Complex corners, setup critical<br><br>
+        <strong>Modern Tilke Designs:</strong> Bahrain, Abu Dhabi<br>
+        • Wide run-off areas, multiple overtaking zones<br><br>
+        Each circuit requires different car setups and strategies!`;
+      }
+
+      // Betting and predictions
+      if (lowerQuestion.includes('bet') || lowerQuestion.includes('predict')) {
+        return `<strong>2025 Race Predictions & Betting Tips:</strong><br><br>
+        Based on current championship standings:<br><br>
+        <strong>Top Picks:</strong><br>
+        🥇 <strong>Lando Norris</strong> - Championship leader, consistent podiums<br>
+        🥈 <strong>Max Verstappen</strong> - 3x champion, clutch performer<br>
+        🥉 <strong>Oscar Piastri</strong> - Value bet with strong form<br><br>
+        <strong>Strategy Tips:</strong><br>
+        • Consider track characteristics<br>
+        • Norris strong in wet conditions<br>
+        • Verstappen excels under pressure<br>
+        • McLaren dominant on most circuits<br><br>
+        <em>Remember: This uses virtual currency for educational purposes only!</em>`;
+      }
+
+      // Streaming/watching
+      if (lowerQuestion.includes('watch') || lowerQuestion.includes('stream')) {
+        return `<strong>Legal F1 Streaming Options:</strong><br><br>
+        <strong>F1 TV Pro</strong> - Official F1 streaming service<br>
+        • Live races, replays, onboard cameras<br>
+        • Available in most countries<br><br>
+        <strong>Sky Sports F1</strong> - UK-based coverage<br>
+        • Comprehensive analysis and commentary<br><br>
+        <strong>ESPN+</strong> - US streaming<br>
+        • All races live and on-demand<br><br>
+        <strong>DAZN</strong> - Available in select countries<br>
+        • Multiple sports including F1<br><br>
+        Check availability in your region!`;
+      }
+
+      // Historical questions
+      if (lowerQuestion.includes('history') || lowerQuestion.includes('past') || lowerQuestion.includes('2024') || lowerQuestion.includes('2023')) {
+        return `<strong>Recent F1 Championship History:</strong><br><br>
+        <strong>2024 Season:</strong><br>
+        🏆 Driver: Max Verstappen (Red Bull) - 437 points<br>
+        🏆 Constructor: McLaren - 666 points<br>
+        • Verstappen's 4th consecutive title<br>
+        • McLaren's first constructor title since 1998<br><br>
+        <strong>2023 Season:</strong><br>
+        🏆 Driver: Max Verstappen (Red Bull) - 575 points<br>
+        🏆 Constructor: Red Bull Racing - 860 points<br>
+        • Verstappen won 19 of 22 races<br>
+        • Most dominant season in F1 history<br><br>
+        <strong>2022 Season:</strong><br>
+        🏆 Driver: Max Verstappen (Red Bull) - 454 points<br>
+        🏆 Constructor: Red Bull Racing - 759 points<br>
+        • Epic battle with Leclerc early season`;
+      }
+
+      // Rules and regulations
+      if (lowerQuestion.includes('rule') || lowerQuestion.includes('regulation')) {
+        return `<strong>Key F1 Rules & Regulations - 2025:</strong><br><br>
+        <strong>Cost Cap:</strong> $135 million per team annually<br>
+        <strong>Engine:</strong> 1.6L V6 Turbo Hybrid<br>
+        <strong>Power Units:</strong> 3 per season allowed<br>
+        <strong>Gearbox:</strong> 8-speed sequential<br>
+        <strong>DRS:</strong> Adjustable rear wing (1-second gap rule)<br><br>
+        <strong>Race Weekend:</strong><br>
+        • Friday: 2 practice sessions<br>
+        • Saturday: Practice, Qualifying<br>
+        • Sunday: Race (305km or 2 hours)<br><br>
+        <strong>Points System:</strong> 25-18-15-12-10-8-6-4-2-1<br>
+        Fastest lap: +1 point (if in top 10)`;
+      }
+
+      // Safety and flags
+      if (lowerQuestion.includes('flag') || lowerQuestion.includes('safety')) {
+        return `<strong>F1 Flags & Safety Systems:</strong><br><br>
+        <strong>Racing Flags:</strong><br>
+        🟢 <strong>Green:</strong> Track clear, race on<br>
+        🟡 <strong>Yellow:</strong> Danger, no overtaking<br>
+        🔴 <strong>Red:</strong> Race stopped<br>
+        ⚫⚪ <strong>Chequered:</strong> Race finished<br>
+        🔵 <strong>Blue:</strong> Let faster car past<br>
+        ⚫🟠 <strong>Black/Orange:</strong> Mechanical issue, pit required<br>
+        ⚫ <strong>Black:</strong> Disqualification<br><br>
+        <strong>Safety Systems:</strong><br>
+        • Safety Car: Bunches field during hazards<br>
+        • Virtual Safety Car: Drivers reduce speed<br>
+        • Red Flag: Race suspended<br><br>
+        Safety is paramount in modern F1!`;
+      }
+
+      // General F1 knowledge
+      if (lowerQuestion.includes('fastest') || lowerQuestion.includes('speed')) {
+        return `<strong>F1 Speed Facts - 2025:</strong><br><br>
+        <strong>Top Speeds:</strong><br>
+        • Maximum: ~360 km/h (224 mph)<br>
+        • Average race speed: ~200-260 km/h<br>
+        • Fastest circuit: Monza (avg ~260 km/h)<br><br>
+        <strong>Acceleration:</strong><br>
+        • 0-100 km/h: ~2.6 seconds<br>
+        • 0-200 km/h: ~5 seconds<br>
+        • 0-300 km/h: ~12 seconds<br><br>
+        <strong>Cornering:</strong><br>
+        • Can pull 6G in corners<br>
+        • Brake from 300 to 80 km/h in ~100 meters<br><br>
+        F1 cars are engineering marvels!`;
+      }
+
+      // Default comprehensive response
+      return `I'm your F1 AI assistant! I can help you with:<br><br>
+      <strong>Current Season (2025):</strong><br>
+      • Championship standings and analysis<br>
+      • Driver and team comparisons<br>
+      • Race predictions and betting tips<br><br>
+      <strong>Technical Knowledge:</strong><br>
+      • How F1 cars work (DRS, tires, engines)<br>
+      • Race strategies and pit stops<br>
+      • Qualifying format and rules<br><br>
+      <strong>Tracks & History:</strong><br>
+      • Circuit characteristics<br>
+      • Historical championship data<br>
+      • Famous races and moments<br><br>
+      <strong>Practical Info:</strong><br>
+      • Where to watch F1 legally<br>
+      • Understanding flags and safety<br>
+      • F1 regulations explained<br><br>
+      Try asking: "Who's leading the championship?" or "Explain DRS" or "Compare Norris and Verstappen"!`;
+    }
+
+    function quickAIQuestion(question) {
+      document.getElementById('aiChatInput').value = question;
+      sendAIMessage();
+    }
+
+    // Channel Functions
+    function openCreateChannelModal() {
+      if (!currentUser) {
+        showToast('Please create a profile first!', 'warning');
+        return;
+      }
+      openModal('createChannelModal');
+    }
+
+    async function createChannel(event) {
+      event.preventDefault();
+      
+      if (!currentUser) return;
+
+      const channelName = document.getElementById('channelName').value;
+      const channelDescription = document.getElementById('channelDescription').value;
+
+      const btn = event.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Creating...';
+
+      const newChannel = {
+        type: 'channel',
+        channelName,
+        channelDescription,
+        createdAt: new Date().toISOString()
+      };
+
+      const result = await window.dataSdk.create(newChannel);
+      
+      if (result.isOk) {
+        closeModal('createChannelModal');
+        document.getElementById('createChannelForm').reset();
+        showToast('Channel created successfully!', 'success');
+        
+        // Wait a moment for the data to sync, then select the new channel
+        setTimeout(() => {
+          const createdChannel = allChannels.find(ch => ch.channelName === channelName);
+          if (createdChannel) {
+            selectChannel(createdChannel.__backendId);
+          }
+        }, 500);
+      } else {
+        showToast('Failed to create channel. Please try again.', 'error');
+      }
+      
+      // Always re-enable button
+      btn.disabled = false;
+      btn.textContent = 'Create Channel';
+    }
+
+    async function sendMessage() {
+      if (!currentUser) {
+        showToast('Please create a profile first!', 'warning');
+        return;
+      }
+      
+      if (!currentChannel) {
+        showToast('Please select a channel first!', 'warning');
+        return;
+      }
+
+      if (currentChannel.channelName === 'F1 News') {
+        return;
+      }
+
+      const input = document.getElementById('messageInput');
+      const messageText = input.value.trim();
+      
+      if (!messageText) return;
+
+      const sendBtn = document.querySelector('.send-btn');
+      const originalBtnText = sendBtn.textContent;
+      input.disabled = true;
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+
+      const newMessage = {
+        type: 'message',
+        channelId: currentChannel.__backendId,
+        messageText,
+        author: currentUser.username,
+        authorPhotoUrl: currentUser.profilePhotoUrl || '',
+        timestamp: new Date().toISOString(),
+        reactions: ''
+      };
+
+      input.value = '';
+
+      const result = await window.dataSdk.create(newMessage);
+      
+      if (result.isOk) {
+        // Message will appear via onDataChanged callback
+      } else {
+        showToast('Failed to send message. Please try again.', 'error');
+        input.value = messageText; // Restore message
+      }
+
+      input.disabled = false;
+      sendBtn.disabled = false;
+      sendBtn.textContent = originalBtnText;
+      input.focus();
+    }
+
+    // Modal Functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+      
+      // Update current balance display when opening add funds modal
+      if (modalId === 'addFundsModal' && currentUser) {
+        document.getElementById('currentBalanceDisplay').textContent = `$${currentUser.balance.toFixed(2)}`;
+      }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Add Funds Function
+    async function addFunds(event) {
+      event.preventDefault();
+      
+      if (!currentUser) {
+        showToast('Please create a profile first!', 'warning');
+        return;
+      }
+
+      const amount = parseFloat(document.getElementById('addAmount').value);
+      
+      if (amount < 10) {
+        showToast('Minimum amount is $10', 'error');
+        return;
+      }
+
+      if (amount > 10000) {
+        showToast('Maximum amount is $10,000', 'error');
+        return;
+      }
+
+      const btn = event.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Adding Funds...';
+
+      const updatedUser = { ...currentUser };
+      updatedUser.balance += amount;
+
+      const result = await window.dataSdk.update(updatedUser);
+      
+      if (result.isOk) {
+        currentUser = updatedUser;
+        
+        // Immediately update all balance displays
+        updateBalanceDisplays();
+        
+        closeModal('addFundsModal');
+        document.getElementById('addFundsForm').reset();
+        document.getElementById('addAmount').value = '100';
+        showToast(`Successfully added $${amount.toFixed(2)} to your balance!`, 'success');
+      } else {
+        showToast('Failed to add funds. Please try again.', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Add Funds';
+    }
+    
+    // Helper function to update all balance displays
+    function updateBalanceDisplays() {
+      if (!currentUser) return;
+      
+      // Calculate active bets total
+      const activeBetsTotal = allBets
+        .filter(bet => bet.userId === currentUser.__backendId && bet.status === 'pending')
+        .reduce((sum, bet) => sum + bet.amount, 0);
+      
+      const availableBalance = currentUser.balance - activeBetsTotal;
+      
+      // Update header balance
+      const userBalanceEl = document.getElementById('userBalance');
+      if (userBalanceEl) {
+        userBalanceEl.innerHTML = `
+          <div style="line-height: 1.4;">
+            <div>$${availableBalance.toFixed(2)}</div>
+            ${activeBetsTotal > 0 ? `<div style="font-size: 0.75rem; opacity: 0.8;">($${activeBetsTotal.toFixed(2)} in bets)</div>` : ''}
+          </div>
+        `;
+      }
+      
+      // Update betting page balance
+      const bettingBalance = document.getElementById('bettingBalance');
+      if (bettingBalance) {
+        bettingBalance.innerHTML = `
+          <div style="line-height: 1.4;">
+            <div>$${availableBalance.toFixed(2)}</div>
+            ${activeBetsTotal > 0 ? `<div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.3rem;">($${activeBetsTotal.toFixed(2)} in active bets)</div>` : ''}
+          </div>
+        `;
+      }
+      
+      // Update starting balance label
+      const startingBalanceLabel = document.getElementById('startingBalanceLabel');
+      if (startingBalanceLabel) {
+        startingBalanceLabel.innerHTML = `
+          Total Balance: $${currentUser.balance.toFixed(2)}
+          ${activeBetsTotal > 0 ? `<br><span style="color: #888;">Available: $${availableBalance.toFixed(2)} | In Bets: $${activeBetsTotal.toFixed(2)}</span>` : ''}
+        `;
+      }
+    }
+
+    // Toast message system
+    function showToast(message, type) {
+      const banner = document.createElement('div');
+      banner.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#ff9800'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease-out;
+      `;
+      banner.textContent = message;
+      document.body.appendChild(banner);
+
+      setTimeout(() => {
+        banner.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => banner.remove(), 300);
+      }, 3000);
+    }
+
+    // Fake message generator
+    let fakeMessagesEnabled = true;
+    let fakeMessageTimeout = null;
+    
+    const fakeUsernames = [
+      'MaxFan2025', 'LandoLover', 'FerrariForever', 'MercedesManiac', 'RedBullRacer',
+      'McLarenMike', 'F1Fanatic99', 'SpeedDemon', 'RacingRick', 'TurboTom',
+      'GridGirl88', 'PitLanePatty', 'CheckeredFlag', 'DRS_Master', 'TyreWhisperer',
+      'AeroAce', 'PolePositionPro', 'OvertakeKing', 'ApexHunter', 'SlipstreamSam'
+    ];
+
+    const fakeMessages = [
+      'Great race today!',
+      'Did you see that overtake?!',
+      'The pace is insane this season',
+      'McLaren looking strong',
+      'Verstappen is unstoppable',
+      'Norris for the championship!',
+      'That strategy call was brilliant',
+      'Safety car ruined my bet 😭',
+      'Who else is watching qualifying?',
+      'Ferrari needs to improve their pit stops',
+      'Hamilton still got it!',
+      'Russell is underrated',
+      'Best season in years',
+      'DRS too powerful this year?',
+      'That was wheel to wheel racing!',
+      'Incredible defending',
+      'Love this track',
+      'Rain would make this interesting',
+      'Tire strategy is key here',
+      'What a save!',
+      'These new regulations are working',
+      'Closest championship battle ever',
+      'Piastri is the real deal',
+      'Leclerc deserves better',
+      'Red flags always at the worst time',
+      'That radio message was hilarious',
+      'Team orders are so controversial',
+      'Bahrain GP was amazing',
+      'Can\'t wait for Monaco',
+      'Spa is the best circuit',
+      'Silverstone weekend hype!',
+      'Who\'s your GOAT?',
+      'These drivers are on another level',
+      'The midfield battle is spicy',
+      'Haas showing improvement',
+      'Williams comeback season?',
+      'Alpine needs a reset',
+      'Aston Martin fell off',
+      'Racing Bulls surprise package',
+      'Rookie of the year predictions?'
+    ];
+
+    function toggleFakeMessages() {
+      fakeMessagesEnabled = !fakeMessagesEnabled;
+      
+      const toggleBtn = document.getElementById('toggleMessageText');
+      if (fakeMessagesEnabled) {
+        toggleBtn.textContent = '🤖 Disable Auto Messages';
+        showToast('Auto messages enabled', 'success');
+        startFakeMessages();
+      } else {
+        toggleBtn.textContent = '🤖 Enable Auto Messages';
+        showToast('Auto messages disabled', 'success');
+        if (fakeMessageTimeout) {
+          clearTimeout(fakeMessageTimeout);
+          fakeMessageTimeout = null;
+        }
+      }
+    }
+
+    function startFakeMessages() {
+      if (fakeMessageTimeout) {
+        clearTimeout(fakeMessageTimeout);
+        fakeMessageTimeout = null;
+      }
+
+      const sendFakeMessage = async () => {
+        // Only send if enabled and we're in the community page with a channel selected
+        if (!fakeMessagesEnabled) {
+          return;
+        }
+
+        const communityPage = document.getElementById('communityPage');
+        if (!communityPage || !communityPage.classList.contains('active') || !currentChannel) {
+          scheduleNextMessage();
+          return;
+        }
+
+        // Don't send fake messages in F1 News channel
+        if (currentChannel.channelName === 'F1 News') {
+          scheduleNextMessage();
+          return;
+        }
+
+        const randomUsername = fakeUsernames[Math.floor(Math.random() * fakeUsernames.length)];
+        const randomMessage = fakeMessages[Math.floor(Math.random() * fakeMessages.length)];
+
+        const newMessage = {
+          type: 'message',
+          channelId: currentChannel.__backendId,
+          messageText: randomMessage,
+          author: randomUsername,
+          authorPhotoUrl: '',
+          timestamp: new Date().toISOString(),
+          reactions: ''
+        };
+
+        const result = await window.dataSdk.create(newMessage);
+        
+        if (result.isOk) {
+          // Message created successfully
+        }
+
+        scheduleNextMessage();
+      };
+
+      const scheduleNextMessage = () => {
+        if (!fakeMessagesEnabled) {
+          return;
+        }
+        
+        const delay = Math.random() * 3500 + 500; // Random delay between 0.5-4 seconds
+        fakeMessageTimeout = setTimeout(() => {
+          sendFakeMessage();
+        }, delay);
+      };
+
+      scheduleNextMessage();
+    }
+
+    function stopFakeMessages() {
+      if (fakeMessageTimeout) {
+        clearTimeout(fakeMessageTimeout);
+        fakeMessageTimeout = null;
+      }
+    }
+
+    // Download FIA Rulebook Function
+    function downloadFIARulebook() {
+      // Create a comprehensive FIA rulebook document
+      const rulebookContent = `
+FIA FORMULA 1 TECHNICAL AND SPORTING REGULATIONS - 2025
+========================================================
+
+SPORTING REGULATIONS
+--------------------
+
+1. RACE WEEKEND FORMAT
+   - Friday: Two 60-minute practice sessions (FP1, FP2)
+   - Saturday: One 60-minute practice session (FP3), followed by Qualifying
+   - Sunday: Race (minimum 305km or 2 hours)
+
+2. QUALIFYING FORMAT
+   Q1 (18 minutes): All 20 drivers compete, slowest 5 eliminated
+   Q2 (15 minutes): 15 drivers compete, slowest 5 eliminated
+   Q3 (12 minutes): Top 10 drivers battle for pole position
+   
+   Note: Top 10 finishers in Q2 must start the race on their Q2 tires
+
+3. POINTS SYSTEM
+   1st Place: 25 points
+   2nd Place: 18 points
+   3rd Place: 15 points
+   4th Place: 12 points
+   5th Place: 10 points
+   6th Place: 8 points
+   7th Place: 6 points
+   8th Place: 4 points
+   9th Place: 2 points
+   10th Place: 1 point
+   
+   Fastest Lap: +1 point (if driver finishes in top 10)
+
+4. CHAMPIONSHIP SCORING
+   - Driver's Championship: Individual driver points across all races
+   - Constructor's Championship: Combined points of both team drivers
+
+5. RACE RULES
+   - Minimum race distance: 305km (except Monaco: 260km)
+   - Maximum race duration: 2 hours (excluding red flag time)
+   - Formation lap mandatory before race start
+   - Pit lane speed limit: 80 km/h (60 km/h in some circuits)
+
+6. PENALTIES AND FLAGS
+   Green Flag: Track clear, racing resumes
+   Yellow Flag: Danger on track, no overtaking, reduce speed
+   Double Yellow: Greater danger, be prepared to stop, no overtaking
+   Red Flag: Session stopped, return to pit lane immediately
+   Blue Flag: Faster car approaching, allow pass within 3 blue flags
+   Black Flag: Disqualification, return to pits immediately
+   Black/White Flag: Warning for unsportsmanlike behavior
+   Black/Orange Flag: Mechanical issue, must pit for repairs
+   White Flag: Slow-moving vehicle on track
+   Chequered Flag: Session or race end
+
+   Common Penalties:
+   - 5-second time penalty (added to race time)
+   - 10-second time penalty
+   - Drive-through penalty (must drive through pit lane)
+   - Stop-and-go penalty (must stop in pit box for specified time)
+   - Grid penalty (start positions dropped for next race)
+   - Disqualification
+
+TECHNICAL REGULATIONS
+---------------------
+
+1. POWER UNIT SPECIFICATIONS
+   Engine Type: 1.6-liter V6 Turbo Hybrid
+   Maximum RPM: 15,000 RPM
+   Fuel Flow Limit: 100 kg/hour maximum
+   Fuel Tank Capacity: 110 kg maximum
+   
+   Hybrid Components:
+   - MGU-K (Motor Generator Unit - Kinetic): Recovers energy from braking
+   - MGU-H (Motor Generator Unit - Heat): Recovers energy from turbo
+   - Energy Store: Battery system (approximately 4 MJ deployment per lap)
+   - Control Electronics: Manages power unit operation
+
+2. POWER UNIT ALLOCATION
+   Each driver allowed per season:
+   - 3 Internal Combustion Engines (ICE)
+   - 3 Turbochargers (TC)
+   - 3 MGU-H units
+   - 2 MGU-K units
+   - 2 Energy Stores (ES)
+   - 2 Control Electronics (CE)
+   - 8 Exhaust Systems
+   
+   Exceeding allocation results in grid penalties
+
+3. CHASSIS AND AERODYNAMICS
+   Minimum Weight: 798 kg (including driver)
+   Maximum Width: 2000 mm
+   Maximum Length: No limit (typically around 5500 mm)
+   Maximum Height: 950 mm
+   
+   Aerodynamic Regulations:
+   - Front wing width: Maximum 1900 mm
+   - Rear wing width: Maximum 1050 mm
+   - Diffuser regulations strictly controlled
+   - DRS (Drag Reduction System) mandatory
+   - Ground effect regulations for 2022+ generation cars
+
+4. DRS (DRAG REDUCTION SYSTEM)
+   - Adjustable rear wing flap
+   - Only usable in designated DRS zones
+   - Driver must be within 1 second of car ahead at detection point
+   - Disabled in wet conditions
+   - Activation controlled by driver button
+   - Increases top speed by approximately 10-15 km/h
+
+5. TIRE REGULATIONS
+   Supplier: Pirelli (exclusive)
+   
+   Dry Weather Compounds:
+   - C1 (Hard) - White sidewall
+   - C2 (Medium) - Yellow sidewall  
+   - C3 (Soft) - Red sidewall
+   - C4 (Super Soft)
+   - C5 (Ultra Soft)
+   
+   Note: FIA selects 3 compounds for each race from the 5 available
+   
+   Wet Weather Compounds:
+   - Intermediate (Green sidewall) - Light rain, drying conditions
+   - Full Wet (Blue sidewall) - Heavy rain
+   
+   Tire Rules:
+   - Must use at least 2 different dry compounds during dry race
+   - Free tire choice if race starts wet
+   - Maximum tire allocation per weekend specified by FIA
+   - Tire blanket temperature limits: 70°C (front), 100°C (rear)
+
+6. GEARBOX
+   Type: 8-speed sequential semi-automatic
+   Durability: Must last 6 consecutive events
+   Exceeding allocation results in 5-place grid penalty
+
+7. SAFETY EQUIPMENT
+   Mandatory Safety Features:
+   - Halo cockpit protection device
+   - Survival cell (monocoque) crash testing required
+   - Six-point safety harness
+   - Head and Neck Support (HANS) device
+   - Fire suppression system
+   - Wheel tethers (prevent wheels detaching in crash)
+   - Anti-stall system
+   - Rear-facing rain light
+   - Biometric gloves for heart rate monitoring
+
+8. FUEL AND OIL
+   Fuel: Strictly regulated composition, E10 (10% ethanol) from 2022
+   Fuel samples taken regularly for testing
+   Oil consumption limit: 0.6 liters per 100km
+   No refueling during race
+
+FINANCIAL REGULATIONS
+---------------------
+
+1. COST CAP
+   Annual Spending Limit: $135 million USD (2023-2025)
+   
+   Excluded from Cost Cap:
+   - Driver salaries
+   - Top 3 highest-paid personnel salaries
+   - Marketing and hospitality costs
+   - Heritage activities
+   - Demolition/factory closure costs
+   - Financial costs
+   - Staff bonuses for championships
+   
+   Penalties for Breach:
+   - Minor breach (< 5% over): Fine and/or deduction of wind tunnel time
+   - Material breach (> 5% over): Points deduction, race bans, exclusion
+
+2. WIND TUNNEL AND CFD RESTRICTIONS
+   Allocation based on championship position:
+   - 1st place: 70% allocation
+   - 2nd place: 75% allocation
+   - 3rd place: 80% allocation
+   - Continues scaling up
+   - Last place: 115% allocation
+   
+   Designed to help lower-performing teams catch up
+
+SPORTING CONDUCT
+----------------
+
+1. TRACK LIMITS
+   - All four wheels must not completely leave the track surface
+   - Exceeding track limits may result in lap time deletion
+   - Three violations: Warning
+   - Continued violations: Time penalties
+
+2. RACING GUIDELINES
+   - Must leave racing room for opponent
+   - No dangerous driving or weaving
+   - No unnecessary impeding of faster cars
+   - Respect blue flags within 3 flag zones
+   - No unsportsmanlike conduct
+
+3. VIRTUAL SAFETY CAR (VSC)
+   - Activated for minor incidents requiring marshals on track
+   - All drivers must slow to designated delta time
+   - No overtaking allowed
+   - Racing resumes when VSC ends
+
+4. SAFETY CAR
+   - Deployed for serious incidents
+   - All cars bunch up behind safety car
+   - No overtaking (except to unlap under specific conditions)
+   - Pit lane open for pit stops
+   - Racing resumes after safety car returns to pit lane
+
+5. RED FLAG PROCEDURES
+   - Race suspended for serious incidents
+   - All cars return to pit lane or grid
+   - Clock stops during red flag
+   - Race can be restarted or declared if sufficient distance completed
+
+PARC FERMÉ REGULATIONS
+----------------------
+
+From the start of Qualifying until the start of the Race:
+- No modifications to car setup allowed
+- Only specific exceptions permitted (e.g., front wing angle, tire pressures)
+- Ensures cars race in qualifying specification
+- Violations result in pit lane start or disqualification
+
+SUPERLICENCE SYSTEM
+-------------------
+
+Requirements to obtain FIA Super Licence:
+- Minimum age: 18 years
+- Valid driving licence
+- Points accumulated in junior categories:
+  - 40 points required over 3-year period
+  - Points awarded based on championship positions in FIA-recognized series
+  - F2 Champion: 40 points
+  - F3 Champion: 30 points
+  - IndyCar Champion: 40 points
+- 300km of testing in current F1 car
+- Pass FIA's mandatory extraction test
+
+TESTING RESTRICTIONS
+--------------------
+
+1. IN-SEASON TESTING
+   - Severely limited during season
+   - Specific allocated test days only
+   - Tire testing with designated teams
+   - Young driver testing allowed (drivers with < 2 races experience)
+
+2. FILMING DAYS
+   - 2 permitted per season
+   - Limited to 100km per day
+   - Must use demonstration tires (not current season compounds)
+
+3. PRIVATE TESTING
+   - Prohibited with cars less than 3 years old
+   - Older cars ("TPC" - Testing of Previous Cars) permitted
+
+RACE PROCEDURES
+---------------
+
+1. FORMATION LAP
+   - Cars line up on grid in qualifying order
+   - Formation lap begins
+   - Cars return to grid positions
+   - Lights go through sequence (5 red lights illuminate)
+   - Race starts when lights go out (no countdown)
+
+2. RACE START PROCEDURES
+   - Aborted Start: If issues detected, additional formation lap
+   - Jump Start: 5-second penalty or drive-through
+   - False Start: 10-second penalty or drive-through
+
+3. PIT STOPS
+   - Pit lane speed limit: 60-80 km/h (circuit dependent)
+   - Cars must be fitted with all 4 wheels before release
+   - Unsafe release penalties apply
+   - Refueling prohibited
+
+4. FINISHING PROCEDURES
+   - Chequered flag shown to race winner
+   - All cars must cross finish line after chequered flag
+   - Top 3 finishers proceed to parc fermé
+   - Cars and drivers subject to post-race scrutineering
+
+DRIVER CONDUCT
+--------------
+
+1. MANDATORY APPEARANCES
+   - Thursday: Media day
+   - Pre-race: Drivers' parade
+   - Post-race: Top 3 attend press conference
+   - Post-race: Podium ceremony
+
+2. DRIVER BRIEFING
+   - Mandatory attendance at Friday drivers' briefing
+   - Race Director discusses track-specific issues
+   - Drivers can raise concerns
+
+3. PENALTY POINTS SYSTEM
+   - 12 penalty points in 12 months = 1-race ban
+   - Points awarded for various infractions:
+     - Causing collision: 2-3 points
+     - Dangerous driving: 2-3 points
+     - Ignoring flags: 2-3 points
+   - Points expire after 12 months
+
+ENVIRONMENTAL INITIATIVES
+-------------------------
+
+1. SUSTAINABILITY GOALS
+   - Net-zero carbon by 2030
+   - 100% sustainable fuel by 2026
+   - Single-use plastic elimination
+   - Reduced freight carbon footprint
+
+2. E10 FUEL
+   - 10% ethanol content (renewable)
+   - Reduced carbon footprint
+   - Gateway to 100% sustainable fuels in 2026
+
+CIRCUIT REQUIREMENTS
+--------------------
+
+1. FIA GRADE 1 LICENCE
+   Required for F1 events:
+   - Minimum track width: 12 meters
+   - Adequate run-off areas
+   - Modern safety barriers and fencing
+   - Medical facilities on-site
+   - Race control and timing facilities
+
+2. CIRCUIT INSPECTION
+   - Annual FIA safety inspection
+   - Track surface quality assessment
+   - Safety equipment verification
+
+================================================================================
+This document is a comprehensive overview of FIA F1 Regulations for 2025.
+For complete official regulations, visit: www.fia.com
+
+Generated by F1+ Command Center - Educational Purposes
+================================================================================
+`;
+
+      // Create blob and download
+      const blob = new Blob([rulebookContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'FIA_F1_Rulebook_2025.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast('FIA Rulebook downloaded successfully!', 'success');
+    }
+
+    // Enter key handlers
+    document.addEventListener('DOMContentLoaded', () => {
+      const messageInput = document.getElementById('messageInput');
+      if (messageInput) {
+        messageInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            sendMessage();
+          }
+        });
+        
+        // Remove "no messages" placeholder when user starts typing
+        messageInput.addEventListener('input', (e) => {
+          const chatMessages = document.getElementById('chatMessages');
+          const loadingDiv = chatMessages.querySelector('.loading');
+          
+          if (e.target.value.trim() && loadingDiv && loadingDiv.textContent.includes('No messages yet')) {
+            loadingDiv.style.display = 'none';
+          } else if (!e.target.value.trim() && loadingDiv && loadingDiv.textContent.includes('No messages yet')) {
+            loadingDiv.style.display = 'block';
+          }
+        });
+      }
+
+      const aiChatInput = document.getElementById('aiChatInput');
+      if (aiChatInput) {
+        aiChatInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            sendAIMessage();
+          }
+        });
+      }
+    });
+
+    // Initialize
+    initApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b0ad08e0373a683',t:'MTc2NjE4ODM1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
